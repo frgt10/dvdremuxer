@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+
+import dvd_remuxer
+
+if __name__ == '__main__':
+    dvd_remuxer.main()
