@@ -5,6 +5,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from pprint import pprint
 
+wrong_lang_codes = ['xx']
 
 class DVDRemuxer:
 
@@ -14,16 +15,17 @@ class DVDRemuxer:
         self.keep_temp_files = keep
         self.rewrite = rewrite
 
-        code_locals = {}
+        self.temp_files = []
+        self.langcodes = ['ru','en']
 
+        code_locals = {}
         data = subprocess.Popen(["lsdvd", "-x", "-Oy", self.device], stdout=subprocess.PIPE)
         exec(data.communicate()[0], {}, code_locals)
-
         self.lsdvd = code_locals.get('lsdvd')
 
-        self.temp_files = []
-        self.file_prefix = self.lsdvd['title'] if self.lsdvd['title'] and self.lsdvd['title'] != 'unknown' else 'dvd'
-        self.langcodes = ['ru','en']
+        self.file_prefix = 'dvd'
+        if self.lsdvd['title'] and self.lsdvd['title'] != 'unknown':
+            self.file_prefix = self.lsdvd['title']
 
     def print_dvd_info(self) -> None:
         print('Longest title: %i' % (self.longest_title_idx()))
@@ -62,8 +64,9 @@ class DVDRemuxer:
         self.temp_files.append(file_stream)
 
         for audio in self.lsdvd['track'][title_idx-1].get('audio'):
-            merge_args.append('--language')
-            merge_args.append('%i:%s' % (audio['ix'], audio['langcode']))
+            if audio['langcode'] not in wrong_lang_codes:
+                merge_args.append('--language')
+                merge_args.append('%i:%s' % (audio['ix'], audio['langcode']))
 
         merge_args.append(file_stream)
 
