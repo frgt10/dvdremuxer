@@ -1,9 +1,9 @@
 import argparse
-import os.path
+from pathlib import Path
 import textwrap
 
 def is_valid_file(parser, path):
-    if not os.path.exists(path):
+    if not Path(path).exists():
         parser.error("The path %s does not exist!" % path)
     else:
         return path

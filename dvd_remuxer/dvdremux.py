@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import subprocess
-import os.path
+from pathlib import Path
 from datetime import datetime, timedelta
 from pprint import pprint
 
@@ -104,7 +104,7 @@ class DVDRemuxer:
             pprint(self.temp_files)
         else:
             for file in self.temp_files:
-                os.remove(file)
+                Path(file).unlink()
 
     def longest_title_idx(self) -> int:
         return self.lsdvd['longest_track']
@@ -130,7 +130,7 @@ class StreamDumper:
 
         outfile = '%s_%i_video.vob' % (self.remuxer.file_prefix, title_idx)
 
-        if not os.path.exists(outfile) or self.remuxer.rewrite:
+        if not Path(outfile).exists() or self.remuxer.rewrite:
             dump_args = [
                 'mplayer',
                 '-dvd-device', self.remuxer.device,
@@ -156,7 +156,7 @@ class ChaptersDumper:
 
         outfile = '%s_%i_chapters.txt' % (self.remuxer.file_prefix, title_idx)
 
-        if not os.path.exists(outfile) or self.remuxer.rewrite:
+        if not Path(outfile).exists() or self.remuxer.rewrite:
             start = 0.000
             chapters = ''
 
@@ -182,7 +182,7 @@ class VobsubDumper:
 
         outfile = '%s_%i_vobsub_%i_%s' % (self.remuxer.file_prefix, title_idx, sub_ix, langcode)
 
-        if not ( os.path.exists(outfile + '.idx') and os.path.exists(outfile + '.sub') ) or self.remuxer.rewrite:
+        if not ( Path(outfile + '.idx').exists() and Path(outfile + '.sub').exists() ) or self.remuxer.rewrite:
             dump_args = [
                 'mencoder',
                 '-dvd-device', self.remuxer.device,
