@@ -49,110 +49,43 @@ class DVDRemuxer:
             if len( track['chapter'] ) > 1:
                 print('Chapters:', len( track['chapter'] ) )
 
-    def dumpvobsub(self, title_idx: int, sub_ix: int, langcode: str) -> None:
-        print('extracting subtitle %i lang %s' % (sub_ix, langcode))
-
-        outfile = '%s_%i_vobsub_%i' % (self.file_prefix, title_idx, sub_ix)
-
-        self.temp_files.append(outfile + '.idx')
-        self.temp_files.append(outfile + '.sub')
-
-        if not ( os.path.exists(outfile + '.idx') and os.path.exists(outfile + '.sub') ) or self.rewrite:
-            # mencoder dvd://1 -dvd-device /dev/dvd -ovc copy -oac copy -vobsubout "videoname2" -vobsuboutindex 2 -sid 1 -nosound -o /dev/null -vf harddup
-            dump_args = [
-                'mencoder',
-                '-dvd-device', self.device,
-                'dvd://%i' % (title_idx),
-                '-vobsubout', outfile,
-                '-vobsuboutindex', '%i' % (sub_ix),
-                '-sid', '%i' % (sub_ix - 1),
-                '-ovc', 'copy',
-                '-oac', 'copy',
-                '-nosound',
-                '-o', '/dev/null',
-                '-vf', 'harddup',
-            ]
-
-            if self.dry_run:
-                pprint(dump_args)
-            else:
-                open(outfile + '.idx', 'w').close()
-                open(outfile + '.sub', 'w').close()
-                subprocess.run(dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-    def dumpstream(self, title_idx: int) -> None:
-        print('dump stream')
-
-        outfile = '%s_%i_video.vob' % (self.file_prefix, title_idx)
-        self.temp_files.append(outfile)
-
-        if not os.path.exists(outfile) or self.rewrite:
-            dump_args = [
-                'mplayer',
-                '-dvd-device', self.device,
-                'dvd://%i' % (title_idx),
-                '-dumpstream',
-                '-dumpfile', outfile
-            ]
-
-            # mplayer -dvd-device "${DVD_DEVICE}" dvd://${t} -dumpstream -dumpfile "${DIR_DIST}${DIST_FILE_PREFIX}${t}.vob"
-            if self.dry_run:
-                pprint(dump_args)
-            else:
-                subprocess.run(dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-    def dumpchapters(self, title_idx: int) -> None:
-        print('dump chapters')
-
-        outfile = '%s_%i_chapters.txt' % (self.file_prefix, title_idx)
-
-        self.temp_files.append(outfile)
-
-        if not os.path.exists(outfile) or self.rewrite:
-            start = 0.000
-            chapters = ''
-
-            for chapter in self.lsdvd['track'][title_idx-1].get('chapter'):
-                chapters += "CHAPTER%02d=%s\n" % (chapter['ix'], self.convert_seconds_to_hhmmss( start ))
-                chapters += "CHAPTER%02dNAME=\n" % (chapter['ix'])
-
-                start += chapter['length']
-
-            if not self.dry_run:
-                with open(outfile, 'w') as f:
-                    print(chapters, file=f)
-
     def convert_seconds_to_hhmmss(self, seconds: float) -> str:
         return (datetime.utcfromtimestamp(0) + timedelta(seconds=seconds)).strftime('%H:%M:%S.%f')[:-3]
 
     def remux_title(self, title_idx: int) -> None:
         print('remuxing title #%i' % (title_idx))
 
-        self.dumpstream(title_idx)
-
         outfile='%s_%i.DVDRemux.mkv' % (self.file_prefix, title_idx)
 
         merge_args = ['mkvmerge', '--output', outfile]
+
+        file_stream = StreamDumper(self).dumpstream(title_idx)
+
+        self.temp_files.append(file_stream)
 
         for audio in self.lsdvd['track'][title_idx-1].get('audio'):
             merge_args.append('--language')
             merge_args.append('%i:%s' % (audio['ix'], audio['langcode']))
 
-        merge_args.append('%s_%i_video.vob' % (self.file_prefix, title_idx))
+        merge_args.append(file_stream)
 
         for vobsub in self.lsdvd['track'][title_idx-1].get('subp'):
             if vobsub['langcode'] in self.langcodes:
-                self.dumpvobsub(title_idx, vobsub['ix'], vobsub['langcode'])
+                file_vobsub_idx, file_vobsub_sub = VobsubDumper(self).dumpvobsub(title_idx, vobsub['ix'], vobsub['langcode'])
+
+                self.temp_files.append(file_vobsub_idx)
+                self.temp_files.append(file_vobsub_sub)
+
                 merge_args.append('--language')
                 merge_args.append('0:%s' % (vobsub['langcode']))
-                merge_args.append('%s_%i_vobsub_%i.idx' % (self.file_prefix, title_idx, vobsub['ix']))
+                merge_args.append(file_vobsub_idx)
 
-        self.dumpchapters(title_idx)
+        file_chapters = ChaptersDumper(self).dumpchapters(title_idx)
 
-        chapters_file = '%s_%i_chapters.txt' % (self.file_prefix, title_idx)
+        self.temp_files.append(file_chapters)
 
         merge_args.append('--chapters')
-        merge_args.append(chapters_file)
+        merge_args.append(file_chapters)
 
         print('merge tracks')
 
@@ -186,3 +119,92 @@ class DVDRemuxer:
             titles.append(track.get('ix'))
 
         return titles
+
+
+class StreamDumper:
+
+    def __init__(self, remuxer: DVDRemuxer):
+        self.remuxer = remuxer
+
+    def dumpstream(self, title_idx: int) -> str:
+        print('dump stream')
+
+        outfile = '%s_%i_video.vob' % (self.remuxer.file_prefix, title_idx)
+
+        if not os.path.exists(outfile) or self.remuxer.rewrite:
+            dump_args = [
+                'mplayer',
+                '-dvd-device', self.remuxer.device,
+                'dvd://%i' % (title_idx),
+                '-dumpstream',
+                '-dumpfile', outfile
+            ]
+
+            # mplayer -dvd-device "${DVD_DEVICE}" dvd://${t} -dumpstream -dumpfile "${DIR_DIST}${DIST_FILE_PREFIX}${t}.vob"
+            if self.remuxer.dry_run:
+                pprint(dump_args)
+            else:
+                subprocess.run(dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        return outfile
+
+class ChaptersDumper:
+
+    def __init__(self, remuxer: DVDRemuxer):
+        self.remuxer = remuxer
+
+    def dumpchapters(self, title_idx: int) -> str:
+        print('dump chapters')
+
+        outfile = '%s_%i_chapters.txt' % (self.remuxer.file_prefix, title_idx)
+
+        if not os.path.exists(outfile) or self.remuxer.rewrite:
+            start = 0.000
+            chapters = ''
+
+            for chapter in self.remuxer.lsdvd['track'][title_idx-1].get('chapter'):
+                chapters += "CHAPTER%02d=%s\n" % (chapter['ix'], self.remuxer.convert_seconds_to_hhmmss( start ))
+                chapters += "CHAPTER%02dNAME=\n" % (chapter['ix'])
+
+                start += chapter['length']
+
+            if not self.remuxer.dry_run:
+                with open(outfile, 'w') as f:
+                    print(chapters, file=f)
+
+        return outfile
+
+class VobsubDumper:
+
+    def __init__(self, remuxer: DVDRemuxer):
+        self.remuxer = remuxer
+
+    def dumpvobsub(self, title_idx: int, sub_ix: int, langcode: str):
+        print('extracting subtitle %i lang %s' % (sub_ix, langcode))
+
+        outfile = '%s_%i_vobsub_%i_%s' % (self.remuxer.file_prefix, title_idx, sub_ix, langcode)
+
+        if not ( os.path.exists(outfile + '.idx') and os.path.exists(outfile + '.sub') ) or self.remuxer.rewrite:
+            # mencoder dvd://1 -dvd-device /dev/dvd -ovc copy -oac copy -vobsubout "videoname2" -vobsuboutindex 2 -sid 1 -nosound -o /dev/null -vf harddup
+            dump_args = [
+                'mencoder',
+                '-dvd-device', self.remuxer.device,
+                'dvd://%i' % (title_idx),
+                '-vobsubout', outfile,
+                '-vobsuboutindex', '%i' % (sub_ix),
+                '-sid', '%i' % (sub_ix - 1),
+                '-ovc', 'copy',
+                '-oac', 'copy',
+                '-nosound',
+                '-o', '/dev/null',
+                '-vf', 'harddup',
+            ]
+
+            if self.remuxer.dry_run:
+                pprint(dump_args)
+            else:
+                open(outfile + '.idx', 'w').close()
+                open(outfile + '.sub', 'w').close()
+                subprocess.run(dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        return outfile + '.idx', outfile + '.sub'
