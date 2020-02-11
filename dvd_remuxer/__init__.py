@@ -1,7 +1,7 @@
 import sys
 from pprint import pprint
 from .options import parse_args
-from .DVDRemuxer import DVDRemuxer
+from .dvdremux import DVDRemuxer
 
 
 def _real_main():
