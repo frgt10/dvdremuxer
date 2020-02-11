@@ -5,6 +5,7 @@ import os.path
 from datetime import datetime, timedelta
 from pprint import pprint
 
+
 class DVDRemuxer:
 
     def __init__(self, device: str, dry_run: bool, keep: bool, rewrite: bool):
@@ -35,7 +36,7 @@ class DVDRemuxer:
 
             print('Index:', track.get('ix'))
 
-            print('Length:', self.convert_seconds_to_hhmmss(track.get('length')) )
+            print('Length:', convert_seconds_to_hhmmss(track.get('length')) )
 
             print('Video:', track.get('format'), track.get('width'), 'x', track.get('height'), track.get('aspect'), track.get('df'), track.get('fps') )
 
@@ -48,9 +49,6 @@ class DVDRemuxer:
 
             if len( track['chapter'] ) > 1:
                 print('Chapters:', len( track['chapter'] ) )
-
-    def convert_seconds_to_hhmmss(self, seconds: float) -> str:
-        return (datetime.utcfromtimestamp(0) + timedelta(seconds=seconds)).strftime('%H:%M:%S.%f')[:-3]
 
     def remux_title(self, title_idx: int) -> None:
         print('remuxing title #%i' % (title_idx))
@@ -163,7 +161,7 @@ class ChaptersDumper:
             chapters = ''
 
             for chapter in self.remuxer.lsdvd['track'][title_idx-1].get('chapter'):
-                chapters += "CHAPTER%02d=%s\n" % (chapter['ix'], self.remuxer.convert_seconds_to_hhmmss( start ))
+                chapters += "CHAPTER%02d=%s\n" % (chapter['ix'], convert_seconds_to_hhmmss( start ))
                 chapters += "CHAPTER%02dNAME=\n" % (chapter['ix'])
 
                 start += chapter['length']
@@ -208,3 +206,7 @@ class VobsubDumper:
                 subprocess.run(dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         return outfile + '.idx', outfile + '.sub'
+
+
+def convert_seconds_to_hhmmss(seconds: float) -> str:
+    return (datetime.utcfromtimestamp(0) + timedelta(seconds=seconds)).strftime('%H:%M:%S.%f')[:-3]
