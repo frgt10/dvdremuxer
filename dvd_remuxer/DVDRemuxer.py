@@ -138,7 +138,6 @@ class StreamDumper:
                 '-dumpfile', outfile
             ]
 
-            # mplayer -dvd-device "${DVD_DEVICE}" dvd://${t} -dumpstream -dumpfile "${DIR_DIST}${DIST_FILE_PREFIX}${t}.vob"
             if self.remuxer.dry_run:
                 pprint(dump_args)
             else:
@@ -183,7 +182,6 @@ class VobsubDumper:
         outfile = '%s_%i_vobsub_%i_%s' % (self.remuxer.file_prefix, title_idx, sub_ix, langcode)
 
         if not ( os.path.exists(outfile + '.idx') and os.path.exists(outfile + '.sub') ) or self.remuxer.rewrite:
-            # mencoder dvd://1 -dvd-device /dev/dvd -ovc copy -oac copy -vobsubout "videoname2" -vobsuboutindex 2 -sid 1 -nosound -o /dev/null -vf harddup
             dump_args = [
                 'mencoder',
                 '-dvd-device', self.remuxer.device,
