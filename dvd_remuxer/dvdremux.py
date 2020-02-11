@@ -78,12 +78,13 @@ class DVDRemuxer:
                 merge_args.append('0:%s' % (vobsub['langcode']))
                 merge_args.append(file_vobsub_idx)
 
-        file_chapters = ChaptersDumper(self).dumpchapters(title_idx)
+        if len( self.lsdvd['track'][title_idx-1]['chapter'] ) > 1:
+            file_chapters = ChaptersDumper(self).dumpchapters(title_idx)
 
-        self.temp_files.append(file_chapters)
+            self.temp_files.append(file_chapters)
 
-        merge_args.append('--chapters')
-        merge_args.append(file_chapters)
+            merge_args.append('--chapters')
+            merge_args.append(file_chapters)
 
         print('merge tracks')
 
