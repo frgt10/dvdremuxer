@@ -7,6 +7,7 @@ from pprint import pprint
 
 wrong_lang_codes = ['xx']
 
+
 class DVDRemuxer:
 
     def __init__(self, device: str, dry_run: bool, keep: bool, rewrite: bool):
@@ -16,10 +17,11 @@ class DVDRemuxer:
         self.rewrite = rewrite
 
         self.temp_files = []
-        self.langcodes = ['ru','en']
+        self.langcodes = ['ru', 'en']
 
         code_locals = {}
-        data = subprocess.Popen(["lsdvd", "-x", "-Oy", self.device], stdout=subprocess.PIPE)
+        data = subprocess.Popen(
+            ["lsdvd", "-x", "-Oy", self.device], stdout=subprocess.PIPE)
         exec(data.communicate()[0], {}, code_locals)
         self.lsdvd = code_locals.get('lsdvd')
 
@@ -38,24 +40,26 @@ class DVDRemuxer:
 
             print('Index:', track.get('ix'))
 
-            print('Length:', convert_seconds_to_hhmmss(track.get('length')) )
+            print('Length:', convert_seconds_to_hhmmss(track.get('length')))
 
-            print('Video:', track.get('format'), track.get('width'), 'x', track.get('height'), track.get('aspect'), track.get('df'), track.get('fps') )
+            print('Video:', track.get('format'),
+                  track.get('width'), 'x', track.get('height'),
+                  track.get('aspect'), track.get('df'), track.get('fps'))
 
-            print('Audio:' )
-            pprint( track.get('audio') )
+            print('Audio:')
+            pprint(track.get('audio'))
 
-            if len( track['subp'] ) > 0:
-                print('Subtitles:' )
-                pprint( track.get('subp') )
+            if len(track['subp']) > 0:
+                print('Subtitles:')
+                pprint(track.get('subp'))
 
-            if len( track['chapter'] ) > 1:
-                print('Chapters:', len( track['chapter'] ) )
+            if len(track['chapter']) > 1:
+                print('Chapters:', len(track['chapter']))
 
     def remux_title(self, title_idx: int) -> None:
         print('remuxing title #%i' % (title_idx))
 
-        outfile='%s_%i.DVDRemux.mkv' % (self.file_prefix, title_idx)
+        outfile = '%s_%i.DVDRemux.mkv' % (self.file_prefix, title_idx)
 
         merge_args = ['mkvmerge', '--output', outfile]
 
@@ -81,7 +85,7 @@ class DVDRemuxer:
                 merge_args.append('0:%s' % (vobsub['langcode']))
                 merge_args.append(file_vobsub_idx)
 
-        if len( self.lsdvd['track'][title_idx-1]['chapter'] ) > 1:
+        if len(self.lsdvd['track'][title_idx-1]['chapter']) > 1:
             file_chapters = ChaptersDumper(self).dumpchapters(title_idx)
 
             self.temp_files.append(file_chapters)
@@ -145,9 +149,11 @@ class StreamDumper:
             if self.remuxer.dry_run:
                 pprint(dump_args)
             else:
-                subprocess.run(dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(dump_args, stdout=subprocess.DEVNULL,
+                               stderr=subprocess.DEVNULL)
 
         return outfile
+
 
 class ChaptersDumper:
 
@@ -164,7 +170,8 @@ class ChaptersDumper:
             chapters = ''
 
             for chapter in self.remuxer.lsdvd['track'][title_idx-1].get('chapter'):
-                chapters += "CHAPTER%02d=%s\n" % (chapter['ix'], convert_seconds_to_hhmmss( start ))
+                chapters += "CHAPTER%02d=%s\n" % (
+                    chapter['ix'], convert_seconds_to_hhmmss(start))
                 chapters += "CHAPTER%02dNAME=\n" % (chapter['ix'])
 
                 start += chapter['length']
@@ -175,6 +182,7 @@ class ChaptersDumper:
 
         return outfile
 
+
 class VobsubDumper:
 
     def __init__(self, remuxer: DVDRemuxer):
@@ -183,9 +191,10 @@ class VobsubDumper:
     def dumpvobsub(self, title_idx: int, sub_ix: int, langcode: str):
         print('extracting subtitle %i lang %s' % (sub_ix, langcode))
 
-        outfile = '%s_%i_vobsub_%i_%s' % (self.remuxer.file_prefix, title_idx, sub_ix, langcode)
+        outfile = '%s_%i_vobsub_%i_%s' % (
+            self.remuxer.file_prefix, title_idx, sub_ix, langcode)
 
-        if not ( Path(outfile + '.idx').exists() and Path(outfile + '.sub').exists() ) or self.remuxer.rewrite:
+        if not (Path(outfile + '.idx').exists() and Path(outfile + '.sub').exists()) or self.remuxer.rewrite:
             dump_args = [
                 'mencoder',
                 '-dvd-device', self.remuxer.device,
@@ -205,7 +214,8 @@ class VobsubDumper:
             else:
                 open(outfile + '.idx', 'w').close()
                 open(outfile + '.sub', 'w').close()
-                subprocess.run(dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(dump_args, stdout=subprocess.DEVNULL,
+                               stderr=subprocess.DEVNULL)
 
         return outfile + '.idx', outfile + '.sub'
 

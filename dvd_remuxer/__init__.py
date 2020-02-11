@@ -22,7 +22,8 @@ def _real_main():
         print('Remuxing all titles')
         titles_idx = remuxer.all_titles_idx()
     else:
-        print('No titles specified. Use longest title #%i.' % (remuxer.longest_title_idx()))
+        print('No titles specified. Use longest title #%i.' %
+              (remuxer.longest_title_idx()))
         titles_idx.append(remuxer.longest_title_idx())
 
     if args.add_sub_langcode:
@@ -30,6 +31,7 @@ def _real_main():
 
     for idx in titles_idx:
         remuxer.remux_title(idx)
+
 
 def main():
     try:
