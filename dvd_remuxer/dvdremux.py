@@ -108,7 +108,7 @@ class DVDRemuxer:
             pprint(merge_args)
         else:
             open(outfile, "w").close()
-            subprocess.run(merge_args, stdout=subprocess.DEVNULL)
+            subprocess.run(merge_args)
 
         if not self.keep_temp_files:
             self.__rm_temp_files()
