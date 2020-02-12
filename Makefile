@@ -25,3 +25,8 @@ dvd-remuxer: dvd_remuxer/*.py
 	cat dvd-remuxer.zip >> dvd-remuxer
 	rm dvd-remuxer.zip
 	chmod a+x dvd-remuxer
+
+clean:
+	rm -f dvd-remuxer *.vob *.idx *.sub *_chapters.txt *.mkv
+	find . -name "*.pyc" -delete
+	find . -name "*.class" -delete
