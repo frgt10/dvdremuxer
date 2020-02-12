@@ -7,7 +7,7 @@ from .dvdremux import DVDRemuxer
 def _real_main():
     args = parse_args()
 
-    print('Run with arguments:')
+    print("Run with arguments:")
     pprint(vars(args))
 
     remuxer = DVDRemuxer(args.dvd, args.dry_run, args.keep, args.rewrite)
@@ -19,11 +19,13 @@ def _real_main():
     if args.title_idx:
         titles_idx.append(args.title_idx)
     elif args.all_titles:
-        print('Remuxing all titles')
+        print("Remuxing all titles")
         titles_idx = remuxer.all_titles_idx()
     else:
-        print('No titles specified. Use longest title #%i.' %
-              (remuxer.longest_title_idx()))
+        print(
+            "No titles specified. Use longest title #%i."
+            % (remuxer.longest_title_idx())
+        )
         titles_idx.append(remuxer.longest_title_idx())
 
     if args.add_sub_langcode:
@@ -37,4 +39,4 @@ def main():
     try:
         _real_main()
     except KeyboardInterrupt:
-        sys.exit('\nERROR: Interrupted by user')
+        sys.exit("\nERROR: Interrupted by user")
