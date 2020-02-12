@@ -1,2 +1,12 @@
-.vstags
 __pycache__/
+
+dvd-remuxer
+
+*.vob
+*.idx
+*.sub
+*_chapters.txt
+*.mkv
+
+# VS Code related files
+.vstags
