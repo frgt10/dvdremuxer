@@ -3,7 +3,7 @@ from pathlib import Path
 import textwrap
 
 
-def is_valid_file(parser, path):
+def is_valid_path(parser, path):
     if not Path(path).exists():
         parser.error("The path %s does not exist!" % path)
     else:
@@ -27,7 +27,7 @@ def parse_args():
         "dvd",
         metavar="PATH",
         help="dir with VIDEO_TS or iso image",
-        type=lambda path: is_valid_file(argparser, path),
+        type=lambda path: is_valid_path(argparser, path),
     )
 
     argparser.add_argument(
