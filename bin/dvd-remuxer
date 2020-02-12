@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
-
-here = sys.path[0]
-
-# git checkout
-if here != "/usr/bin":
-    from pathlib import Path
-
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
 import dvd_remuxer
 
 if __name__ == "__main__":
