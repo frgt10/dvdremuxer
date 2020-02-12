@@ -110,6 +110,11 @@ class DVDRemuxer:
             open(outfile, "w").close()
             subprocess.run(merge_args)
 
+            if Path(outfile).stat().st_size == 0:
+                # An error occurred during the merge.
+                # Remove zero size out file. 
+                self.temp_files.append(outfile)
+
         if not self.keep_temp_files:
             self.__rm_temp_files()
 
