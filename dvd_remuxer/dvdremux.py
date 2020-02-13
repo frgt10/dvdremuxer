@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 import subprocess
+import tempfile
 from pathlib import Path
 from datetime import datetime, timedelta
 from pprint import pprint
+
 
 wrong_lang_codes = ["xx"]
 
@@ -14,6 +16,13 @@ class DVDRemuxer:
         self.dry_run = options.get("dry_run")
         self.keep_temp_files = options.get("keep_temp_files")
         self.rewrite = options.get("rewrite")
+        self.tmp_dir_obj = None
+
+        if options.get("use_sys_tmp_dir"):
+            self.tmp_dir_obj = tempfile.TemporaryDirectory(prefix="_dvdremux")
+            self.tmp_dir = Path(self.tmp_dir_obj.name)
+        else:
+            self.tmp_dir = Path.cwd()
 
         self.temp_files = []
         self.langcodes = ["ru", "en"]
@@ -112,20 +121,20 @@ class DVDRemuxer:
 
             if Path(outfile).stat().st_size == 0:
                 # An error occurred during the merge.
-                # Remove zero size out file. 
+                # Remove zero size out file.
                 self.temp_files.append(outfile)
 
-        if not self.keep_temp_files:
+        if not self.keep_temp_files and not self.tmp_dir_obj:
             self.__rm_temp_files()
 
     def __rm_temp_files(self) -> None:
-        print("remove temp files")
+        print("remove temp files:")
 
         if self.dry_run:
             pprint(self.temp_files)
         else:
-            for file in self.temp_files:
-                Path(file).unlink()
+            for p in self.temp_files:
+                p.unlink()
 
     def longest_title_idx(self) -> int:
         return self.lsdvd["longest_track"]
@@ -148,7 +157,9 @@ class StreamDumper:
     def dumpstream(self, title_idx: int) -> str:
         print("dump stream")
 
-        outfile = "%s_%i_video.vob" % (self.remuxer.file_prefix, title_idx)
+        outfile = self.remuxer.tmp_dir / (
+            "%s_%i_video.vob" % (self.remuxer.file_prefix, title_idx)
+        )
 
         if not Path(outfile).exists() or self.remuxer.rewrite:
             dump_args = [
@@ -178,7 +189,9 @@ class ChaptersDumper:
     def dumpchapters(self, title_idx: int) -> str:
         print("dump chapters")
 
-        outfile = "%s_%i_chapters.txt" % (self.remuxer.file_prefix, title_idx)
+        outfile = self.remuxer.tmp_dir / (
+            "%s_%i_chapters.txt" % (self.remuxer.file_prefix, title_idx)
+        )
 
         if not Path(outfile).exists() or self.remuxer.rewrite:
             start = 0.000
@@ -207,17 +220,15 @@ class VobsubDumper:
     def dumpvobsub(self, title_idx: int, sub_ix: int, langcode: str):
         print("extracting subtitle %i lang %s" % (sub_ix, langcode))
 
-        outfile = "%s_%i_vobsub_%i_%s" % (
-            self.remuxer.file_prefix,
-            title_idx,
-            sub_ix,
-            langcode,
+        outfile = self.remuxer.tmp_dir / (
+            "%s_%i_vobsub_%i_%s"
+            % (self.remuxer.file_prefix, title_idx, sub_ix, langcode)
         )
 
-        if (
-            not (Path(outfile + ".idx").exists() and Path(outfile + ".sub").exists())
-            or self.remuxer.rewrite
-        ):
+        outfile_idx = outfile.with_suffix(".idx")
+        outfile_sub = outfile.with_suffix(".sub")
+
+        if not (outfile_idx.exists() and outfile_sub.exists()) or self.remuxer.rewrite:
             dump_args = [
                 "mencoder",
                 "-dvd-device",
@@ -243,13 +254,13 @@ class VobsubDumper:
             if self.remuxer.dry_run:
                 pprint(dump_args)
             else:
-                open(outfile + ".idx", "w").close()
-                open(outfile + ".sub", "w").close()
+                outfile_idx.open(mode="w").close()
+                outfile_sub.open(mode="w").close()
                 subprocess.run(
                     dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
                 )
 
-        return outfile + ".idx", outfile + ".sub"
+        return outfile_idx, outfile_sub
 
 
 def convert_seconds_to_hhmmss(seconds: float) -> str:

@@ -39,6 +39,13 @@ def parse_args():
     )
 
     argparser.add_argument(
+        "--use-sys-tmp-dir",
+        dest="use_sys_tmp_dir",
+        action="store_true",
+        help="use system temp directory to store temp files"
+    )
+
+    argparser.add_argument(
         "--add-sub-langcode",
         dest="add_sub_langcode",
         metavar="LANGCODE",

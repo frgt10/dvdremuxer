@@ -15,6 +15,7 @@ def _real_main():
         dry_run = args.dry_run,
         keep_temp_files = args.keep,
         rewrite = args.rewrite,
+        use_sys_tmp_dir = args.use_sys_tmp_dir
     )
 
     remuxer.print_dvd_info()
