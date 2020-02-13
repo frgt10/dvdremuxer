@@ -10,7 +10,7 @@ def is_valid_path(parser, path):
         return path
 
 
-def parse_args():
+def create_argparser():
     argparser = argparse.ArgumentParser(
         description="DVD Remuxer",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -69,4 +69,9 @@ def parse_args():
 
     argparser.add_argument("--director", help="movie director")
 
+    return argparser
+
+
+def parse_args():
+    argparser = create_argparser()
     return argparser.parse_args()
