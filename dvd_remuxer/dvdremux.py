@@ -9,11 +9,11 @@ wrong_lang_codes = ["xx"]
 
 
 class DVDRemuxer:
-    def __init__(self, device: str, dry_run: bool, keep: bool, rewrite: bool):
+    def __init__(self, device: str, **options):
         self.device = device
-        self.dry_run = dry_run
-        self.keep_temp_files = keep
-        self.rewrite = rewrite
+        self.dry_run = options.get("dry_run")
+        self.keep_temp_files = options.get("keep_temp_files")
+        self.rewrite = options.get("rewrite")
 
         self.temp_files = []
         self.langcodes = ["ru", "en"]

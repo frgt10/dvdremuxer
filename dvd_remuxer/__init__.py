@@ -10,7 +10,12 @@ def _real_main():
     print("Run with arguments:")
     pprint(vars(args))
 
-    remuxer = DVDRemuxer(args.dvd, args.dry_run, args.keep, args.rewrite)
+    remuxer = DVDRemuxer(
+        args.dvd,
+        dry_run = args.dry_run,
+        keep_temp_files = args.keep,
+        rewrite = args.rewrite,
+    )
 
     remuxer.print_dvd_info()
 
