@@ -201,6 +201,11 @@ class DVDRemuxer:
 
         return outfile
 
+    def dumpvobsubs(self, title_idx: int):
+        for vobsub in self.lsdvd["track"][title_idx - 1].get("subp"):
+            if vobsub["langcode"] in self.langcodes:
+                self.dumpvobsub(title_idx, vobsub["ix"], vobsub["langcode"])
+
     def dumpvobsub(self, title_idx: int, sub_ix: int, langcode: str):
         print("extracting subtitle %i lang %s" % (sub_ix, langcode))
 
