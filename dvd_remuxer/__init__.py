@@ -37,8 +37,17 @@ def _real_main():
     if args.add_sub_langcode:
         remuxer.langcodes = +args.add_sub_langcode
 
+    pprint(remuxer.langcodes)
+
+    action = {
+        "remux_to_mkv": "remux_to_mkv",
+        "stream": "dumpstream",
+        "subs": "dumpvobsubs",
+        "chapters": "dumpchapters",
+    }.get(args.action)
+
     for idx in titles_idx:
-        remuxer.remux_to_mkv(idx)
+        getattr(remuxer, action)(idx)
 
 
 def main():

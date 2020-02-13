@@ -51,6 +51,13 @@ def create_argparser():
     )
 
     argparser.add_argument(
+        "--action",
+        choices=["remux_to_mkv", "stream", "subs", "chapters"],
+        default="remux_to_mkv",
+        help="one of the actions (default: remux_to_mkv)",
+    )
+
+    argparser.add_argument(
         "--use-sys-tmp-dir",
         dest="use_sys_tmp_dir",
         action="store_true",
