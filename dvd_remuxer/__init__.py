@@ -23,7 +23,7 @@ def _real_main():
     titles_idx = []
 
     if args.title_idx:
-        titles_idx.append(args.title_idx)
+        titles_idx = args.title_idx
     elif args.all_titles:
         print("Remuxing all titles")
         titles_idx = remuxer.all_titles_idx()
