@@ -46,3 +46,5 @@ def main():
         _real_main()
     except KeyboardInterrupt:
         sys.exit("\nERROR: Interrupted by user")
+    except Exception as error:
+        sys.exit("\nERROR: %s" % (error))

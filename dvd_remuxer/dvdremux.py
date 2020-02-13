@@ -34,6 +34,9 @@ class DVDRemuxer:
         exec(data.communicate()[0], {}, code_locals)
         self.lsdvd = code_locals.get("lsdvd")
 
+        if not self.lsdvd:
+            raise Exception("Path is not valid video DVD")
+
         self.file_prefix = "dvd"
         if self.lsdvd["title"] and self.lsdvd["title"] != "unknown":
             self.file_prefix = self.lsdvd["title"]
