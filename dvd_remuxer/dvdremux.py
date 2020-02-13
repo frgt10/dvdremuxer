@@ -72,7 +72,7 @@ class DVDRemuxer:
             if len(track["chapter"]) > 1:
                 print("Chapters:", len(track["chapter"]))
 
-    def remux_title(self, title_idx: int) -> None:
+    def remux_to_mkv(self, title_idx: int) -> None:
         print("remuxing title #%i" % (title_idx))
 
         outfile = "%s_%i.DVDRemux.mkv" % (self.file_prefix, title_idx)

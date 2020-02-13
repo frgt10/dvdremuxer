@@ -38,7 +38,7 @@ def _real_main():
         remuxer.langcodes.append(args.add_sub_langcode)
 
     for idx in titles_idx:
-        remuxer.remux_title(idx)
+        remuxer.remux_to_mkv(idx)
 
 
 def main():
