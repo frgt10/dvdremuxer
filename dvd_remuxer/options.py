@@ -10,6 +10,14 @@ def is_valid_path(parser, path):
         return path
 
 
+def get_int_list(parser, title_idx):
+    return list(map(int, title_idx.split(",")))
+
+
+def get_str_list(parser, langcodes):
+    return langcodes.split(",")
+
+
 def create_argparser():
     argparser = argparse.ArgumentParser(
         description="DVD Remuxer",
@@ -31,7 +39,11 @@ def create_argparser():
     )
 
     argparser.add_argument(
-        "--dvd-title", dest="title_idx", type=int, help="title that should be remuxed"
+        "--dvd-title",
+        dest="title_idx",
+        nargs="?",
+        type=lambda title_idx: get_int_list(argparser, title_idx),
+        help="title(s) that should be remuxed",
     )
 
     argparser.add_argument(
@@ -49,7 +61,9 @@ def create_argparser():
         "--add-sub-langcode",
         dest="add_sub_langcode",
         metavar="LANGCODE",
-        help="Keep additional subtitles for language",
+        nargs="?",
+        type=lambda langcodes: get_str_list(argparser, langcodes),
+        help="keep additional subtitles for language",
     )
 
     argparser.add_argument("--keep", action="store_true", help="keep temp files")
