@@ -54,7 +54,7 @@ def create_argparser():
         "--use-sys-tmp-dir",
         dest="use_sys_tmp_dir",
         action="store_true",
-        help="use system temp directory to store temp files"
+        help="use system temp directory to store temp files",
     )
 
     argparser.add_argument(
