@@ -35,7 +35,7 @@ def _real_main():
         titles_idx.append(remuxer.longest_title_idx())
 
     if args.add_sub_langcode:
-        remuxer.langcodes.append(args.add_sub_langcode)
+        remuxer.langcodes = +args.add_sub_langcode
 
     for idx in titles_idx:
         remuxer.remux_to_mkv(idx)
