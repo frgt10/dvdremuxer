@@ -79,7 +79,7 @@ class DVDRemuxer:
 
         merge_args = ["mkvmerge", "--output", outfile]
 
-        file_stream = StreamDumper(self).dumpstream(title_idx)
+        file_stream = self.dumpstream(title_idx)
 
         self.temp_files.append(file_stream)
 
@@ -92,7 +92,7 @@ class DVDRemuxer:
 
         for vobsub in self.lsdvd["track"][title_idx - 1].get("subp"):
             if vobsub["langcode"] in self.langcodes:
-                file_vobsub_idx, file_vobsub_sub = VobsubDumper(self).dumpvobsub(
+                file_vobsub_idx, file_vobsub_sub = self.dumpvobsub(
                     title_idx, vobsub["ix"], vobsub["langcode"]
                 )
 
@@ -104,7 +104,7 @@ class DVDRemuxer:
                 merge_args.append(file_vobsub_idx)
 
         if len(self.lsdvd["track"][title_idx - 1]["chapter"]) > 1:
-            file_chapters = ChaptersDumper(self).dumpchapters(title_idx)
+            file_chapters = self.dumpchapters(title_idx)
 
             self.temp_files.append(file_chapters)
 
@@ -149,30 +149,23 @@ class DVDRemuxer:
 
         return titles
 
-
-class StreamDumper:
-    def __init__(self, remuxer: DVDRemuxer):
-        self.remuxer = remuxer
-
     def dumpstream(self, title_idx: int) -> str:
         print("dump stream")
 
-        outfile = self.remuxer.tmp_dir / (
-            "%s_%i_video.vob" % (self.remuxer.file_prefix, title_idx)
-        )
+        outfile = self.tmp_dir / ("%s_%i_video.vob" % (self.file_prefix, title_idx))
 
-        if not Path(outfile).exists() or self.remuxer.rewrite:
+        if not Path(outfile).exists() or self.rewrite:
             dump_args = [
                 "mplayer",
                 "-dvd-device",
-                self.remuxer.device,
+                self.device,
                 "dvd://%i" % (title_idx),
                 "-dumpstream",
                 "-dumpfile",
                 outfile,
             ]
 
-            if self.remuxer.dry_run:
+            if self.dry_run:
                 pprint(dump_args)
             else:
                 subprocess.run(
@@ -181,23 +174,16 @@ class StreamDumper:
 
         return outfile
 
-
-class ChaptersDumper:
-    def __init__(self, remuxer: DVDRemuxer):
-        self.remuxer = remuxer
-
     def dumpchapters(self, title_idx: int) -> str:
         print("dump chapters")
 
-        outfile = self.remuxer.tmp_dir / (
-            "%s_%i_chapters.txt" % (self.remuxer.file_prefix, title_idx)
-        )
+        outfile = self.tmp_dir / ("%s_%i_chapters.txt" % (self.file_prefix, title_idx))
 
-        if not Path(outfile).exists() or self.remuxer.rewrite:
+        if not Path(outfile).exists() or self.rewrite:
             start = 0.000
             chapters = ""
 
-            for chapter in self.remuxer.lsdvd["track"][title_idx - 1].get("chapter"):
+            for chapter in self.lsdvd["track"][title_idx - 1].get("chapter"):
                 chapters += "CHAPTER%02d=%s\n" % (
                     chapter["ix"],
                     convert_seconds_to_hhmmss(start),
@@ -206,33 +192,27 @@ class ChaptersDumper:
 
                 start += chapter["length"]
 
-            if not self.remuxer.dry_run:
+            if not self.dry_run:
                 with open(outfile, "w") as f:
                     print(chapters, file=f)
 
         return outfile
 
-
-class VobsubDumper:
-    def __init__(self, remuxer: DVDRemuxer):
-        self.remuxer = remuxer
-
     def dumpvobsub(self, title_idx: int, sub_ix: int, langcode: str):
         print("extracting subtitle %i lang %s" % (sub_ix, langcode))
 
-        outfile = self.remuxer.tmp_dir / (
-            "%s_%i_vobsub_%i_%s"
-            % (self.remuxer.file_prefix, title_idx, sub_ix, langcode)
+        outfile = self.tmp_dir / (
+            "%s_%i_vobsub_%i_%s" % (self.file_prefix, title_idx, sub_ix, langcode)
         )
 
         outfile_idx = outfile.with_suffix(".idx")
         outfile_sub = outfile.with_suffix(".sub")
 
-        if not (outfile_idx.exists() and outfile_sub.exists()) or self.remuxer.rewrite:
+        if not (outfile_idx.exists() and outfile_sub.exists()) or self.rewrite:
             dump_args = [
                 "mencoder",
                 "-dvd-device",
-                self.remuxer.device,
+                self.device,
                 "dvd://%i" % (title_idx),
                 "-vobsubout",
                 outfile,
@@ -251,7 +231,7 @@ class VobsubDumper:
                 "harddup",
             ]
 
-            if self.remuxer.dry_run:
+            if self.dry_run:
                 pprint(dump_args)
             else:
                 outfile_idx.open(mode="w").close()
