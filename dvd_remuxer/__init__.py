@@ -7,8 +7,9 @@ from .dvdremux import DVDRemuxer
 def _real_main():
     args = parse_args()
 
-    print("Run with arguments:")
-    pprint(vars(args))
+    if args.verbose:
+        print("Run with arguments:")
+        pprint(vars(args))
 
     remuxer = DVDRemuxer(
         args.dvd,
@@ -23,7 +24,7 @@ def _real_main():
         remuxer.list_languages()
         sys.exit(0)
 
-    if args.info:
+    if args.info or args.verbose:
         remuxer.dvd_info()
 
     titles_idx = []

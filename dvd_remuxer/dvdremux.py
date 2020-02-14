@@ -25,6 +25,9 @@ class DVDRemuxer:
         else:
             self.tmp_dir = Path.cwd()
 
+        if self.verbose:
+            print("Temp directory: %s" % (self.tmp_dir))
+
         self.temp_files = []
         self.langcodes = ["ru", "en"]
 
@@ -114,7 +117,7 @@ class DVDRemuxer:
             self.__rm_temp_files()
 
     def __rm_temp_files(self) -> None:
-        print("remove temp files:")
+        print("remove temp files")
 
         if self.dry_run:
             pprint(self.temp_files)
@@ -174,6 +177,9 @@ class DVDRemuxer:
                 chapters += "CHAPTER%02dNAME=\n" % (chapter["ix"])
 
                 start += chapter["length"]
+
+            if self.verbose:
+                print(chapters)
 
             if not self.dry_run:
                 with open(outfile, "w") as f:
