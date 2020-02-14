@@ -143,7 +143,7 @@ class DVDRemuxer:
 
         outfile = self.tmp_dir / ("%s_%i_video.vob" % (self.file_prefix, title_idx))
 
-        if not Path(outfile).exists() or self.rewrite:
+        if not outfile.exists() or self.rewrite:
             dump_args = [
                 "mplayer",
                 "-dvd-device",
@@ -165,7 +165,7 @@ class DVDRemuxer:
 
         outfile = self.tmp_dir / ("%s_%i_chapters.txt" % (self.file_prefix, title_idx))
 
-        if not Path(outfile).exists() or self.rewrite:
+        if not outfile.exists() or self.rewrite:
             start = 0.000
             chapters = ""
 
@@ -182,7 +182,7 @@ class DVDRemuxer:
                 print(chapters)
 
             if not self.dry_run:
-                with open(outfile, "w") as f:
+                with outfile.open(mode="w") as f:
                     print(chapters, file=f)
 
         return outfile
