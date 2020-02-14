@@ -53,12 +53,20 @@ class DVDRemuxer:
 
         file_stream = self.dumpstream(title_idx)
 
+        in_file_number = 0
+
         self.temp_files.append(file_stream)
+
+        # video from file_stream is first track
+        track_order = "%i:0" % (in_file_number)
 
         for audio in self.lsdvd["track"][title_idx - 1].get("audio"):
             if audio["langcode"] not in wrong_lang_codes:
                 merge_args.append("--language")
                 merge_args.append("%i:%s" % (audio["ix"], audio["langcode"]))
+
+            # audio from file_stream just after video
+            track_order += ",%i:%s" % (in_file_number, audio["ix"])
 
         merge_args.append(file_stream)
 
@@ -68,12 +76,17 @@ class DVDRemuxer:
                     title_idx, vobsub["ix"], vobsub["langcode"]
                 )
 
+                in_file_number += 1  # each subtitle track in separate file
+
                 self.temp_files.append(file_vobsub_idx)
                 self.temp_files.append(file_vobsub_sub)
 
                 merge_args.append("--language")
                 merge_args.append("0:%s" % (vobsub["langcode"]))
                 merge_args.append(file_vobsub_idx)
+
+                # subtitle just after audio
+                track_order += ",%i:0" % (in_file_number)
 
         if len(self.lsdvd["track"][title_idx - 1]["chapter"]) > 1:
             file_chapters = self.dumpchapters(title_idx)
@@ -82,6 +95,9 @@ class DVDRemuxer:
 
             merge_args.append("--chapters")
             merge_args.append(file_chapters)
+
+        merge_args.append("--track-order")
+        merge_args.append(track_order)
 
         print("merge tracks")
 
