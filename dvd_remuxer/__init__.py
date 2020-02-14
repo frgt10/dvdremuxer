@@ -16,6 +16,7 @@ def _real_main():
         keep_temp_files=args.keep,
         rewrite=args.rewrite,
         use_sys_tmp_dir=args.use_sys_tmp_dir,
+        verbose=args.verbose,
     )
 
     if args.list_languages:

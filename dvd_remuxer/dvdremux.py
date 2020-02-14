@@ -16,6 +16,7 @@ class DVDRemuxer:
         self.dry_run = options.get("dry_run")
         self.keep_temp_files = options.get("keep_temp_files")
         self.rewrite = options.get("rewrite")
+        self.verbose = options.get("verbose")
         self.tmp_dir_obj = None
 
         if options.get("use_sys_tmp_dir"):
