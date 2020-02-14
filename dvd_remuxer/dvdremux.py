@@ -47,7 +47,7 @@ class DVDRemuxer:
     def remux_to_mkv(self, title_idx: int) -> None:
         print("remuxing title #%i" % (title_idx))
 
-        outfile = "%s_%i.DVDRemux.mkv" % (self.file_prefix, title_idx)
+        outfile = Path("%s_%i.DVDRemux.mkv" % (self.file_prefix, title_idx))
 
         merge_args = ["mkvmerge", "--output", outfile]
 
@@ -104,13 +104,12 @@ class DVDRemuxer:
         if self.dry_run:
             pprint(merge_args)
         else:
-            open(outfile, "w").close()
             subprocess.run(merge_args)
 
-            if Path(outfile).stat().st_size == 0:
+            if outfile.stat().st_size == 0:
                 # An error occurred during the merge.
-                # Remove zero size out file.
-                self.temp_files.append(outfile)
+                # Unlink file of zero size.
+                outfile.unlink()
 
         if not self.keep_temp_files and not self.tmp_dir_obj:
             self.__rm_temp_files()
