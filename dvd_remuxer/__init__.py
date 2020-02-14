@@ -18,7 +18,8 @@ def _real_main():
         use_sys_tmp_dir=args.use_sys_tmp_dir,
     )
 
-    remuxer.print_dvd_info()
+    if args.info:
+        remuxer.dvd_info()
 
     titles_idx = []
 

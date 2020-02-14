@@ -73,6 +73,8 @@ def create_argparser():
         help="keep additional subtitles for language",
     )
 
+    argparser.add_argument("--info", action="store_true", help="show DVD info")
+
     argparser.add_argument("--keep", action="store_true", help="keep temp files")
 
     argparser.add_argument("--rewrite", action="store_true", help="rewrite files")

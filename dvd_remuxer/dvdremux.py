@@ -41,39 +41,8 @@ class DVDRemuxer:
         if self.lsdvd["title"] and self.lsdvd["title"] != "unknown":
             self.file_prefix = self.lsdvd["title"]
 
-    def print_dvd_info(self) -> None:
-        print("Longest title: %i" % (self.longest_title_idx()))
-
-        for track in self.lsdvd.get("track"):
-            if track.get("length") < 1:
-                continue
-
-            print()
-
-            print("Index:", track.get("ix"))
-
-            print("Length:", convert_seconds_to_hhmmss(track.get("length")))
-
-            print(
-                "Video:",
-                track.get("format"),
-                track.get("width"),
-                "x",
-                track.get("height"),
-                track.get("aspect"),
-                track.get("df"),
-                track.get("fps"),
-            )
-
-            print("Audio:")
-            pprint(track.get("audio"))
-
-            if len(track["subp"]) > 0:
-                print("Subtitles:")
-                pprint(track.get("subp"))
-
-            if len(track["chapter"]) > 1:
-                print("Chapters:", len(track["chapter"]))
+    def dvd_info(self) -> None:
+        subprocess.run(["lsdvd", "-x", self.device])
 
     def remux_to_mkv(self, title_idx: int) -> None:
         print("remuxing title #%i" % (title_idx))
