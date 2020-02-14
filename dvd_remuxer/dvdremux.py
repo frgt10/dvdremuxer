@@ -219,6 +219,9 @@ class DVDRemuxer:
 
         return outfile_idx, outfile_sub
 
+    def list_languages(self):
+        subprocess.run(["mkvmerge", "--list-languages"])
+
 
 def convert_seconds_to_hhmmss(seconds: float) -> str:
     return (datetime.utcfromtimestamp(0) + timedelta(seconds=seconds)).strftime(

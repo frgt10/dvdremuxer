@@ -18,6 +18,10 @@ def _real_main():
         use_sys_tmp_dir=args.use_sys_tmp_dir,
     )
 
+    if args.list_languages:
+        remuxer.list_languages()
+        sys.exit(0)
+
     if args.info:
         remuxer.dvd_info()
 
