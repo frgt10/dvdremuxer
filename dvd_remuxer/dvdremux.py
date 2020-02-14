@@ -43,7 +43,7 @@ class DVDRemuxer:
             self.file_prefix = self.lsdvd["title"]
 
     def dvd_info(self) -> None:
-        subprocess.run(["lsdvd", "-x", self.device])
+        self.subprocess_run(["lsdvd", "-x", self.device])
 
     def remux_to_mkv(self, title_idx: int) -> None:
         print("remuxing title #%i" % (title_idx))
@@ -102,11 +102,9 @@ class DVDRemuxer:
 
         print("merge tracks")
 
-        if self.dry_run:
-            pprint(merge_args)
-        else:
-            subprocess.run(merge_args)
+        self.subprocess_run(merge_args)
 
+        if not self.dry_run:
             if outfile.stat().st_size == 0:
                 # An error occurred during the merge.
                 # Unlink file of zero size.
@@ -153,12 +151,9 @@ class DVDRemuxer:
                 outfile,
             ]
 
-            if self.dry_run:
-                pprint(dump_args)
-            else:
-                subprocess.run(
-                    dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-                )
+            self.subprocess_run(
+                dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
 
         return outfile
 
@@ -224,19 +219,22 @@ class DVDRemuxer:
                 "harddup",
             ]
 
-            if self.dry_run:
-                pprint(dump_args)
-            else:
+            if not self.dry_run:
                 outfile_idx.open(mode="w").close()
                 outfile_sub.open(mode="w").close()
-                subprocess.run(
-                    dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-                )
+
+            self.subprocess_run(
+                dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
 
         return outfile_idx, outfile_sub
 
-    def list_languages(self):
-        subprocess.run(["mkvmerge", "--list-languages"])
+    def subprocess_run(self, cmd, **options) -> None:
+        if self.dry_run or self.verbose:
+            pprint(cmd)
+
+        if not self.dry_run:
+            subprocess.run(cmd, **options)
 
 
 def convert_seconds_to_hhmmss(seconds: float) -> str:
