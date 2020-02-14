@@ -235,6 +235,9 @@ class DVDRemuxer:
 
         return outfile_idx, outfile_sub
 
+    def list_languages(self) -> None:
+        self.subprocess_run(["mkvmerge", "--list-languages"])
+
     def subprocess_run(self, cmd, **options) -> None:
         if self.dry_run or self.verbose:
             pprint(cmd)
