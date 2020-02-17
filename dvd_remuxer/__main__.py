@@ -2,7 +2,7 @@
 
 import sys
 
-if __package__ is None and not hasattr(sys, "frozen"):
+if not __package__ and not hasattr(sys, "frozen"):
     # direct call of __main__.py
     from pathlib import Path
 
