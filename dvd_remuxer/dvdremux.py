@@ -46,7 +46,7 @@ class DVDRemuxer:
             self.file_prefix = self.lsdvd["title"]
 
     def dvd_info(self) -> None:
-        self.subprocess_run(["lsdvd", "-x", self.device])
+        self._subprocess_run(["lsdvd", "-x", self.device])
 
     def remux_to_mkv(self, title_idx: int) -> None:
         print("remuxing title #%i" % (title_idx))
@@ -105,7 +105,7 @@ class DVDRemuxer:
 
         print("merge tracks")
 
-        self.subprocess_run(merge_args)
+        self._subprocess_run(merge_args)
 
         if not self.dry_run:
             if outfile.stat().st_size == 0:
@@ -114,9 +114,9 @@ class DVDRemuxer:
                 outfile.unlink()
 
         if not self.keep_temp_files and not self.tmp_dir_obj:
-            self.__rm_temp_files()
+            self._rm_temp_files()
 
-    def __rm_temp_files(self) -> None:
+    def _rm_temp_files(self) -> None:
         print("remove temp files")
 
         if self.dry_run:
@@ -229,16 +229,16 @@ class DVDRemuxer:
                 outfile_idx.open(mode="w").close()
                 outfile_sub.open(mode="w").close()
 
-            self.subprocess_run(
+            self._subprocess_run(
                 dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
             )
 
         return outfile_idx, outfile_sub
 
     def list_languages(self) -> None:
-        self.subprocess_run(["mkvmerge", "--list-languages"])
+        self._subprocess_run(["mkvmerge", "--list-languages"])
 
-    def subprocess_run(self, cmd, **options) -> None:
+    def _subprocess_run(self, cmd, **options) -> None:
         if self.dry_run or self.verbose:
             pprint(cmd)
 
