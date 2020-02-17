@@ -26,6 +26,7 @@ def _real_main():
 
     if args.info or args.verbose:
         remuxer.dvd_info()
+        sys.exit(0)
 
     titles_idx = []
 
