@@ -270,7 +270,7 @@ class DVDRemuxer:
 
     def _subprocess_run(self, cmd: list, **kwargs) -> None:
         if self.dry_run or self.verbose:
-            pprint(cmd)
+            print(subprocess.list2cmdline(cmd))
 
         if not self.dry_run:
             subprocess.run(cmd, **kwargs)
