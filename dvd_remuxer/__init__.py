@@ -27,9 +27,12 @@ def _real_main():
         remuxer.list_languages()
         sys.exit(0)
 
-    if args.info or args.verbose:
+    if args.info:
         remuxer.dvd_info()
         sys.exit(0)
+
+    if args.verbose:
+        remuxer.dvd_info()
 
     titles_idx = []
 
