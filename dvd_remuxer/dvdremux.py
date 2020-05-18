@@ -143,7 +143,7 @@ class DVDRemuxer:
 
         return titles
 
-    def dumpstream(self, title_idx: int) -> str:
+    def dumpstream(self, title_idx: int) -> Path:
         print("dump stream")
 
         outfile = self.tmp_dir / ("%s_%i_video.vob" % (self.file_prefix, title_idx))
@@ -165,7 +165,7 @@ class DVDRemuxer:
 
         return outfile
 
-    def dumpchapters(self, title_idx: int) -> str:
+    def dumpchapters(self, title_idx: int) -> Path:
         print("dump chapters")
 
         outfile = self.tmp_dir / ("%s_%i_chapters.txt" % (self.file_prefix, title_idx))
@@ -243,12 +243,12 @@ class DVDRemuxer:
     def list_languages(self) -> None:
         self._subprocess_run(["mkvmerge", "--list-languages"])
 
-    def _subprocess_run(self, cmd, **options) -> None:
+    def _subprocess_run(self, cmd: list, **kwargs) -> None:
         if self.dry_run or self.verbose:
             pprint(cmd)
 
         if not self.dry_run:
-            subprocess.run(cmd, **options)
+            subprocess.run(cmd, **kwargs)
 
 
 def convert_seconds_to_hhmmss(seconds: float) -> str:
