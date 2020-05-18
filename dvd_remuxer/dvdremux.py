@@ -18,6 +18,7 @@ class DVDRemuxer:
         self.rewrite = options.get("rewrite")
         self.aspect_ratio = options.get("aspect_ratio")
         self.audio_params = options.get("audio_params") or []
+        self.subs_params = options.get("subs_params") or []
         self.verbose = options.get("verbose")
         self.tmp_dir_obj = None
 
@@ -102,23 +103,24 @@ class DVDRemuxer:
 
         merge_args.append(file_stream)
 
-        for vobsub in self.lsdvd["track"][title_idx - 1].get("subp"):
-            if vobsub["langcode"] in self.langcodes:
-                file_vobsub_idx, file_vobsub_sub = self.dumpvobsub(
-                    title_idx, vobsub["ix"], vobsub["langcode"]
-                )
+        for sub_idx, langcode in self._get_title_subs_params(title_idx):
+            langcode = self._normalize_langcode("vobp", title_idx, sub_idx, langcode)
 
-                in_file_number += 1  # each subtitle track in separate file
+            file_vobsub_idx, file_vobsub_sub = self.dumpvobsub(
+                title_idx, sub_idx, langcode
+            )
 
-                self.temp_files.append(file_vobsub_idx)
-                self.temp_files.append(file_vobsub_sub)
+            in_file_number += 1  # each subtitle track in separate file
 
-                merge_args.append("--language")
-                merge_args.append("0:%s" % (vobsub["langcode"]))
-                merge_args.append(file_vobsub_idx)
+            self.temp_files.append(file_vobsub_idx)
+            self.temp_files.append(file_vobsub_sub)
 
-                # subtitle just after audio
-                track_order += ",%i:0" % (in_file_number)
+            merge_args.append("--language")
+            merge_args.append("0:%s" % (langcode))
+            merge_args.append(file_vobsub_idx)
+
+            # subtitle just after audio
+            track_order += ",%i:0" % (in_file_number)
 
         if len(self.lsdvd["track"][title_idx - 1]["chapter"]) > 1:
             file_chapters = self.dumpchapters(title_idx)
@@ -272,6 +274,18 @@ class DVDRemuxer:
 
         if not self.dry_run:
             subprocess.run(cmd, **kwargs)
+
+    def _get_title_subs_params(self, title_idx: int) -> list:
+        subs_params = []
+
+        if self.subs_params:
+            subs_params = self.subs_params
+        else:
+            for vobsub in self.lsdvd["track"][title_idx - 1].get("subp"):
+                if vobsub["langcode"] in self.langcodes:
+                    subs_params.append([vobsub["ix"], vobsub["langcode"]])
+
+        return subs_params
 
     def _normalize_langcode(
         self, type: str, title_idx: int, idx: int, langcode: str

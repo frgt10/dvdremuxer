@@ -105,6 +105,16 @@ def create_argparser():
     )
 
     argparser.add_argument(
+        "--subs",
+        dest="subs_params",
+        metavar="SUB_ID[:LANGCODE][,SUB_ID[:LANGCODE]...]",
+        nargs="?",
+        type=lambda audio_str: get_complex_params(argparser, audio_str),
+        help="Subtitle id with langcode (optional) in necessary order (e.g. 2:ru,1,3:en)."
+        + " All languages including their ISO 639-2 codes can be listed with the --list-languages option.",
+    )
+
+    argparser.add_argument(
         "--list-languages",
         action="store_true",
         help="lists all languages and their ISO 639-2 code",

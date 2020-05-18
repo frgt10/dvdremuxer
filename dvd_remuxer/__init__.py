@@ -19,6 +19,7 @@ def _real_main():
         use_sys_tmp_dir=args.use_sys_tmp_dir,
         aspect_ratio=args.aspect_ratio,
         audio_params=args.audio_params,
+        subs_params=args.subs_params,
         verbose=args.verbose,
     )
 
