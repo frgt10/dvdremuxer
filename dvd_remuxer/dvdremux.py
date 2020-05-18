@@ -17,6 +17,7 @@ class DVDRemuxer:
         self.keep_temp_files = options.get("keep_temp_files")
         self.rewrite = options.get("rewrite")
         self.aspect_ratio = options.get("aspect_ratio")
+        self.audio_params = options.get("audio_params") or []
         self.verbose = options.get("verbose")
         self.tmp_dir_obj = None
 
@@ -58,20 +59,42 @@ class DVDRemuxer:
 
         file_stream = self.dumpstream(title_idx)
 
-        in_file_number = 0
+        in_file_number = 0  # audio and video in first file
 
         self.temp_files.append(file_stream)
 
         # video from file_stream is first track
         track_order = "%i:0" % (in_file_number)
 
-        for audio in self.lsdvd["track"][title_idx - 1].get("audio"):
-            if audio["langcode"] not in wrong_lang_codes:
-                merge_args.append("--language")
-                merge_args.append("%i:%s" % (audio["ix"], audio["langcode"]))
+        # audio params from command line argumets
+        if self.audio_params:
+            audio_tracks = []
+            for audio_idx, langcode in self.audio_params:
+                langcode = self._normalize_langcode(
+                    "audio", title_idx, audio_idx, langcode
+                )
 
-            # audio from file_stream just after video
-            track_order += ",%i:%s" % (in_file_number, audio["ix"])
+                audio_tracks.append(str(audio_idx))
+
+                merge_args.append("--language")
+                merge_args.append("%i:%s" % (audio_idx, langcode))
+
+                # audio from file_stream just after video
+                track_order += ",%i:%s" % (in_file_number, audio_idx)
+
+            # set the necessary audio tracks
+            merge_args.append("--audio-tracks")
+            merge_args.append(str.join(",", audio_tracks))
+
+        # or all audio from DVD title
+        else:
+            for audio in self.lsdvd["track"][title_idx - 1].get("audio"):
+                if audio["langcode"] not in wrong_lang_codes:
+                    merge_args.append("--language")
+                    merge_args.append("%i:%s" % (audio["ix"], audio["langcode"]))
+
+                # audio from file_stream just after video
+                track_order += ",%i:%s" % (in_file_number, audio["ix"])
 
         if self.aspect_ratio:
             merge_args.append("--aspect-ratio")
@@ -249,6 +272,17 @@ class DVDRemuxer:
 
         if not self.dry_run:
             subprocess.run(cmd, **kwargs)
+
+    def _normalize_langcode(
+        self, type: str, title_idx: int, idx: int, langcode: str
+    ) -> str:
+        if langcode == "undefined":
+            langcode = self.lsdvd["track"][title_idx - 1][type][idx - 1]["langcode"]
+
+        if langcode in wrong_lang_codes:
+            langcode = "und"
+
+        return langcode
 
 
 def convert_seconds_to_hhmmss(seconds: float) -> str:

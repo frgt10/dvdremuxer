@@ -18,6 +18,20 @@ def get_str_list(parser, langcodes):
     return langcodes.split(",")
 
 
+def get_complex_params(parser, params_str):
+    params_list = []
+    for item_str in params_str.split(","):
+        params = item_str.split(":")
+        params[0] = int(params[0])
+
+        if len(params) == 1:
+            params.append("undefined")
+
+        params_list.append(params)
+
+    return params_list
+
+
 def create_argparser():
     argparser = argparse.ArgumentParser(
         description="DVD Remuxer",
@@ -78,6 +92,16 @@ def create_argparser():
         dest="aspect_ratio",
         nargs="?",
         help="Video aspect ratio: 16/9, 4/3",
+    )
+
+    argparser.add_argument(
+        "--audio",
+        dest="audio_params",
+        metavar="AUDIO_ID[:LANGCODE][,AUDIO_ID[:LANGCODE]...]",
+        nargs="?",
+        type=lambda audio_str: get_complex_params(argparser, audio_str),
+        help="Audio id with langcode (optional) in necessary order (e.g. 2:ru,1,3:en)."
+        + " All languages including their ISO 639-2 codes can be listed with the --list-languages option.",
     )
 
     argparser.add_argument(
