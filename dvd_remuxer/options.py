@@ -85,7 +85,9 @@ def create_argparser():
 
     argparser.add_argument("--rewrite", action="store_true", help="rewrite files")
 
-    argparser.add_argument("--verbose", action="store_true", help="print various debugging information")
+    argparser.add_argument(
+        "--verbose", action="store_true", help="print various debugging information"
+    )
 
     argparser.add_argument(
         "--dry-run",
