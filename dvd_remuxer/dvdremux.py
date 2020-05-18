@@ -159,7 +159,7 @@ class DVDRemuxer:
                 outfile,
             ]
 
-            self.subprocess_run(
+            self._subprocess_run(
                 dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
             )
 
