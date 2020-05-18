@@ -74,6 +74,13 @@ def create_argparser():
     )
 
     argparser.add_argument(
+        "--aspect-ratio",
+        dest="aspect_ratio",
+        nargs="?",
+        help="Video aspect ratio: 16/9, 4/3",
+    )
+
+    argparser.add_argument(
         "--list-languages",
         action="store_true",
         help="lists all languages and their ISO 639-2 code",

@@ -16,6 +16,7 @@ class DVDRemuxer:
         self.dry_run = options.get("dry_run")
         self.keep_temp_files = options.get("keep_temp_files")
         self.rewrite = options.get("rewrite")
+        self.aspect_ratio = options.get("aspect_ratio")
         self.verbose = options.get("verbose")
         self.tmp_dir_obj = None
 
@@ -71,6 +72,10 @@ class DVDRemuxer:
 
             # audio from file_stream just after video
             track_order += ",%i:%s" % (in_file_number, audio["ix"])
+
+        if self.aspect_ratio:
+            merge_args.append("--aspect-ratio")
+            merge_args.append("0:%s" % (self.aspect_ratio))
 
         merge_args.append(file_stream)
 
