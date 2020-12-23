@@ -8,7 +8,7 @@ from pprint import pprint
 import ast
 
 
-wrong_lang_codes = ["xx"]
+wrong_lang_codes = ["xx", ""]
 
 
 class DVDRemuxer:
@@ -95,9 +95,11 @@ class DVDRemuxer:
         # or all audio from DVD title
         else:
             for audio in self.lsdvd["track"][title_idx - 1].get("audio"):
-                if audio["langcode"] not in wrong_lang_codes:
-                    merge_args.append("--language")
-                    merge_args.append("%i:%s" % (audio["ix"], audio["langcode"]))
+                langcode = self._normalize_langcode(
+                    "audio", title_idx, audio["ix"], audio["langcode"]
+                )
+                merge_args.append("--language")
+                merge_args.append("%i:%s" % (audio["ix"], langcode))
 
                 # audio from file_stream just after video
                 track_order += ",%i:%s" % (in_file_number, audio["ix"])
