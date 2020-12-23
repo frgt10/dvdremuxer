@@ -5,6 +5,7 @@ import tempfile
 from pathlib import Path
 from datetime import datetime, timedelta
 from pprint import pprint
+import ast
 
 
 wrong_lang_codes = ["xx"]
@@ -34,12 +35,16 @@ class DVDRemuxer:
         self.temp_files = []
         self.langcodes = ["ru", "en"]
 
-        code_locals = {}
         data = subprocess.Popen(
             ["lsdvd", "-x", "-Oy", self.device], stdout=subprocess.PIPE
         )
-        exec(data.communicate()[0], {}, code_locals)
-        self.lsdvd = code_locals.get("lsdvd")
+        data_code = (
+            data.communicate()[0]
+            .decode("utf-8", errors="ignore")
+            .replace("lsdvd = ", "")
+        )
+
+        self.lsdvd = ast.literal_eval(data_code)
 
         if not self.lsdvd:
             raise Exception("Path is not valid video DVD")
