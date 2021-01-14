@@ -270,7 +270,22 @@ class DVDRemuxer:
                 dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
             )
 
+        self._fix_vobsub_lang_id(outfile_idx, langcode)
+
         return outfile_idx, outfile_sub
+
+    def _fix_vobsub_lang_id(self, idx_file: Path, langcode: srt):
+        f = idx_file.open(mode="r")
+        content = f.read()
+        f.close()
+        content_new = re.sub(
+            "id: , index", f"id: {langcode}, index", content, flags=re.M
+        )
+
+        if content != content_new:
+            f = idx_file.open(mode="w")
+            f.write(content_new)
+            f.close()
 
     def list_languages(self) -> None:
         self._subprocess_run(["mkvmerge", "--list-languages"])
