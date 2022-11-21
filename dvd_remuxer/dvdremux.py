@@ -274,7 +274,7 @@ class DVDRemuxer:
 
         return outfile_idx, outfile_sub
 
-    def _fix_vobsub_lang_id(self, idx_file: Path, langcode: srt):
+    def _fix_vobsub_lang_id(self, idx_file: Path, langcode: str):
         f = idx_file.open(mode="r")
         content = f.read()
         f.close()
