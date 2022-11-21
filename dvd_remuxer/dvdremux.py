@@ -160,7 +160,10 @@ class DVDRemuxer:
             pprint(self.temp_files)
         else:
             while self.temp_files:
-                self.temp_files.pop().unlink()
+                try:
+                    self.temp_files.pop().unlink()
+                except:
+                    print("Oops!")
 
     def longest_title_idx(self) -> int:
         return self.lsdvd["longest_track"]
