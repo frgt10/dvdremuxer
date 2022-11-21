@@ -20,6 +20,7 @@ def _real_main():
         aspect_ratio=args.aspect_ratio,
         audio_params=args.audio_params,
         subs_params=args.subs_params,
+        split_chapters=args.split_chapters,
         verbose=args.verbose,
     )
 

@@ -23,6 +23,7 @@ class DVDRemuxer:
         self.aspect_ratio = options.get("aspect_ratio")
         self.audio_params = options.get("audio_params") or []
         self.subs_params = options.get("subs_params") or []
+        self.split_chapters = options.get("split_chapters")
         self.verbose = options.get("verbose")
         self.tmp_dir_obj = None
 
@@ -146,6 +147,10 @@ class DVDRemuxer:
 
             merge_args.append("--chapters")
             merge_args.append(file_chapters)
+
+        if self.split_chapters:
+            merge_args.append("--split")
+            merge_args.append("chapters:all")
 
         merge_args.append("--track-order")
         merge_args.append(track_order)

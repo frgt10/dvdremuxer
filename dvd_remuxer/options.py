@@ -120,6 +120,13 @@ def create_argparser():
         help="lists all languages and their ISO 639-2 code",
     )
 
+    argparser.add_argument(
+        "--split-chapters",
+        dest="split_chapters",
+        action="store_true",
+        help="Split video by chapters",
+    )
+
     argparser.add_argument("--info", action="store_true", help="show DVD info")
 
     argparser.add_argument("--keep", action="store_true", help="keep temp files")
