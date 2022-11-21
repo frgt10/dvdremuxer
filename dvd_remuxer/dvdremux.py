@@ -145,10 +145,13 @@ class DVDRemuxer:
         self._subprocess_run(merge_args)
 
         if not self.dry_run:
-            if outfile.stat().st_size == 0:
-                # An error occurred during the merge.
-                # Unlink file of zero size.
-                outfile.unlink()
+            try:
+                if outfile.stat().st_size == 0:
+                    # An error occurred during the merge.
+                    # Unlink file of zero size.
+                    outfile.unlink()
+            except:
+                print("Oops! %s" % outfile)
 
         if not self.keep_temp_files and not self.tmp_dir_obj:
             self._rm_temp_files()
