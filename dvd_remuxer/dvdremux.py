@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
+import sys
 import subprocess
 import tempfile
 from pathlib import Path
 from datetime import datetime, timedelta
 from pprint import pprint
 import ast
-
+import re
 
 wrong_lang_codes = ["xx", ""]
 
@@ -44,7 +47,14 @@ class DVDRemuxer:
             .replace("lsdvd = ", "")
         )
 
-        self.lsdvd = ast.literal_eval(data_code)
+        try:
+            self.lsdvd = ast.literal_eval(
+                re.sub("(?m)^libdvdread:.*\n?", "", data_code)
+            )
+        except Exception as inst:
+            print(inst)
+            print(data_code[:1024])
+            sys.exit(2)
 
         if not self.lsdvd:
             raise Exception("Path is not valid video DVD")
