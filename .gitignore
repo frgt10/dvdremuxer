@@ -1,4 +1,6 @@
 __pycache__/
+.coverage
+coverage.xml
 
 dvd-remuxer
 
@@ -10,3 +12,4 @@ dvd-remuxer
 
 # VS Code related files
 .vstags
+.vscode
