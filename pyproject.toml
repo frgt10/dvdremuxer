@@ -1,0 +1,4 @@
+
+[tool.coverage.run]
+branch = true
+omit = ['*/test/*']
