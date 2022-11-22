@@ -1,5 +1,7 @@
 import sys
 from pprint import pprint
+
+from dvd_remuxer.lsdvd import lsdvd
 from .options import parse_args
 from .dvdremux import DVDRemuxer
 
@@ -13,6 +15,7 @@ def _real_main():
 
     remuxer = DVDRemuxer(
         args.dvd,
+        lsdvd=lsdvd().get_dvd_info(args.dvd),
         dry_run=args.dry_run,
         keep_temp_files=args.keep,
         rewrite=args.rewrite,
