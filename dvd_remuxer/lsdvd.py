@@ -9,8 +9,13 @@ import re
 
 
 class lsdvd:
-    def get_dvd_info(self, device: str) -> dict:
-        lsdvd_output = self.clear_lsdvd_output(self.get_lsdvd_output(device))
+    def __init__(self, device: str):
+        self.device = device
+        self.output = self.get_lsdvd_output(device)
+        self.dvd_info = self.get_dvd_info(self.output)
+
+    def get_dvd_info(self, lsdvd_output: str) -> dict:
+        lsdvd_output = self.clear_lsdvd_output(lsdvd_output)
 
         lsdvd_data = ""
 
@@ -23,9 +28,11 @@ class lsdvd:
 
         return lsdvd_data
 
-    def clear_lsdvd_output(self, lsdvd_output: str) -> str:
+    @staticmethod
+    def clear_lsdvd_output(lsdvd_output: str) -> str:
         return re.sub("(?m)^libdvdread:.*\n?", "", lsdvd_output).replace("lsdvd = ", "")
 
-    def get_lsdvd_output(self, device: str) -> str:
+    @staticmethod
+    def get_lsdvd_output(device: str) -> str:
         data = subprocess.Popen(["lsdvd", "-x", "-Oy", device], stdout=subprocess.PIPE)
         return data.communicate()[0].decode("utf-8", errors="ignore")
