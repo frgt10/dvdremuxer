@@ -37,5 +37,15 @@ class lsdvd:
         data = subprocess.Popen(["lsdvd", "-x", "-Oy", device], stdout=subprocess.PIPE)
         return data.communicate()[0].decode("utf-8", errors="ignore")
 
+    def all_titles_idx(self) -> list:
+        titles = []
+        for track in self.dvd_info.get("track"):
+            if track.get("length") < 1:
+                continue
+
+            titles.append(track.get("ix"))
+
+        return titles
+
     def longest_title_idx(self) -> int:
         return self.dvd_info["longest_track"]

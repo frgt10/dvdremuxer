@@ -46,7 +46,7 @@ def _real_main():
         titles_idx = args.title_idx
     elif args.all_titles:
         print("Remuxing all titles")
-        titles_idx = remuxer.all_titles_idx()
+        titles_idx = lsdvd_obj.all_titles_idx()
     else:
         print(
             "No titles specified. Use longest title #%i."

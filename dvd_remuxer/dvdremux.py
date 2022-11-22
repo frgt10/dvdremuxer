@@ -164,16 +164,6 @@ class DVDRemuxer:
                 except:
                     print("Oops!")
 
-    def all_titles_idx(self):
-        titles = []
-        for track in self.lsdvd.get("track"):
-            if track.get("length") < 1:
-                continue
-
-            titles.append(track.get("ix"))
-
-        return titles
-
     def dumpstream(self, title_idx: int) -> Path:
         print("dump stream")
 

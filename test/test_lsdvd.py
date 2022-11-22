@@ -8,7 +8,24 @@ lsdvd_otput = """libdvdread: Encrypted DVD support unavailable.
 lsdvd = {
   'device' : '.',
   'title' : 'TEST_DVD',
-  'track' : [],
+  'track' : [
+    {
+      'ix' : 1,
+      'length' : 3600.000,
+    },
+    {
+      'ix' : 2,
+      'length' : 600.000,
+    },
+    {
+      'ix' : 3,
+      'length' : 300.000,
+    },
+    {
+      'ix' : 4,
+      'length' : 0.100,
+    },
+  ],
   'longest_track' : 1,
 }
 """
@@ -42,7 +59,24 @@ class TestLsDVD(unittest.TestCase):
             {
                 "device": ".",
                 "title": "TEST_DVD",
-                "track": [],
+                "track": [
+                    {
+                        "ix": 1,
+                        "length": 3600.000,
+                    },
+                    {
+                        "ix": 2,
+                        "length": 600.000,
+                    },
+                    {
+                        "ix": 3,
+                        "length": 300.000,
+                    },
+                    {
+                        "ix": 4,
+                        "length": 0.100,
+                    },
+                ],
                 "longest_track": 1,
             },
         )
@@ -52,6 +86,9 @@ class TestLsDVD(unittest.TestCase):
             self.lsdvd.get_dvd_info(incorrect_lsdvd_otput)
 
         self.assertEqual(cm.exception.code, 2)
+
+    def test_all_titles_idx(self):
+        self.assertListEqual(self.lsdvd.all_titles_idx(), [1, 2, 3])
 
     def test_longest_title_idx(self):
         self.assertEqual(self.lsdvd.longest_title_idx(), 1)
