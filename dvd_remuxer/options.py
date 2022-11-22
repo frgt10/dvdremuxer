@@ -11,7 +11,14 @@ def is_valid_path(parser, path):
 
 
 def get_int_list(parser, title_idx):
-    return list(map(int, title_idx.split(",")))
+    int_numbers = []
+    for string in list(map(str, title_idx.split(","))):
+        if "-" in string:
+            range_start, range_stop = list(map(int, string.split("-")))
+            int_numbers += list(range(range_start, range_stop + 1))
+        else:
+            int_numbers.append(int(string))
+    return int_numbers
 
 
 def get_str_list(parser, langcodes):
