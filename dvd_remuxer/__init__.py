@@ -13,11 +13,11 @@ def _real_main():
         print("Run with arguments:")
         pprint(vars(args))
 
-    lsdvd_obj = lsdvd(args.dvd)
+    lsdvd_obj = lsdvd.read(args.dvd)
 
     remuxer = DVDRemuxer(
         args.dvd,
-        lsdvd=lsdvd_obj.dvd_info,
+        lsdvd=lsdvd_obj,
         dry_run=args.dry_run,
         keep_temp_files=args.keep,
         rewrite=args.rewrite,

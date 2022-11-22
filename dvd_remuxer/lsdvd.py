@@ -6,16 +6,24 @@ import sys
 import subprocess
 import ast
 import re
+import json
 
 
 class lsdvd:
-    def __init__(self, device: str):
-        self.device = device
-        self.output = self.get_lsdvd_output(device)
-        self.dvd_info = self.get_dvd_info(self.output)
+    def __init__(self, lsdvd_dict):
+        self.__dict__.update(lsdvd_dict)
 
-    def get_dvd_info(self, lsdvd_output: str) -> dict:
-        lsdvd_output = self.clear_lsdvd_output(lsdvd_output)
+    @classmethod
+    def read(cls, device: str) -> lsdvd:
+        data_dict = cls.get_dvd_info(cls.get_lsdvd_output(device))
+
+        # using json.loads method and passing json.dumps
+        # method and custom object hook as arguments
+        return json.loads(json.dumps(data_dict), object_hook=cls)
+
+    @staticmethod
+    def get_dvd_info(lsdvd_output: str) -> dict:
+        lsdvd_output = lsdvd.clear_lsdvd_output(lsdvd_output)
 
         lsdvd_data = ""
 
@@ -39,13 +47,13 @@ class lsdvd:
 
     def all_titles_idx(self) -> list:
         titles = []
-        for track in self.dvd_info.get("track"):
-            if track.get("length") < 1:
+        for track in self.track:
+            if track.length < 1:
                 continue
 
-            titles.append(track.get("ix"))
+            titles.append(track.ix)
 
         return titles
 
     def longest_title_idx(self) -> int:
-        return self.dvd_info["longest_track"]
+        return self.longest_track

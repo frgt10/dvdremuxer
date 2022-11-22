@@ -42,8 +42,8 @@ class DVDRemuxer:
             raise Exception("Path is not valid video DVD")
 
         self.file_prefix = "dvd"
-        if self.lsdvd["title"] and self.lsdvd["title"] != "unknown":
-            self.file_prefix = self.lsdvd["title"]
+        if self.lsdvd.title and self.lsdvd.title != "unknown":
+            self.file_prefix = self.lsdvd.title
 
     def dvd_info(self) -> None:
         self._subprocess_run(["lsdvd", "-x", self.device])
@@ -86,15 +86,15 @@ class DVDRemuxer:
 
         # or all audio from DVD title
         else:
-            for audio in self.lsdvd["track"][title_idx - 1].get("audio"):
+            for audio in self.lsdvd.track[title_idx - 1].audio:
                 langcode = self._normalize_langcode(
-                    "audio", title_idx, audio["ix"], audio["langcode"]
+                    "audio", title_idx, audio.ix, audio.langcode
                 )
                 merge_args.append("--language")
-                merge_args.append("%i:%s" % (audio["ix"], langcode))
+                merge_args.append("%i:%s" % (audio.ix, langcode))
 
                 # audio from file_stream just after video
-                track_order += ",%i:%s" % (in_file_number, audio["ix"])
+                track_order += ",%i:%s" % (in_file_number, audio.ix)
 
         if self.aspect_ratio:
             merge_args.append("--aspect-ratio")
@@ -121,7 +121,7 @@ class DVDRemuxer:
             # subtitle just after audio
             track_order += ",%i:0" % (in_file_number)
 
-        if len(self.lsdvd["track"][title_idx - 1]["chapter"]) > 1:
+        if len(self.lsdvd.track[title_idx - 1].chapter) > 1:
             file_chapters = self.dumpchapters(title_idx)
 
             self.temp_files.append(file_chapters)
@@ -195,14 +195,14 @@ class DVDRemuxer:
             start = 0.000
             chapters = ""
 
-            for chapter in self.lsdvd["track"][title_idx - 1].get("chapter"):
+            for chapter in self.lsdvd.track[title_idx - 1].chapter:
                 chapters += "CHAPTER%02d=%s\n" % (
-                    chapter["ix"],
+                    chapter.ix,
                     convert_seconds_to_hhmmss(start),
                 )
-                chapters += "CHAPTER%02dNAME=\n" % (chapter["ix"])
+                chapters += "CHAPTER%02dNAME=\n" % (chapter.ix)
 
-                start += chapter["length"]
+                start += chapter.length
 
             if self.verbose:
                 print(chapters)
@@ -214,9 +214,9 @@ class DVDRemuxer:
         return outfile
 
     def dumpvobsubs(self, title_idx: int):
-        for vobsub in self.lsdvd["track"][title_idx - 1].get("subp"):
-            if vobsub["langcode"] in self.langcodes:
-                self.dumpvobsub(title_idx, vobsub["ix"], vobsub["langcode"])
+        for vobsub in self.lsdvd.track[title_idx - 1].subp:
+            if vobsub.langcode in self.langcodes:
+                self.dumpvobsub(title_idx, vobsub.ix, vobsub.langcode)
 
     def dumpvobsub(self, title_idx: int, sub_ix: int, langcode: str):
         print("extracting subtitle %i lang %s" % (sub_ix, langcode))
@@ -296,9 +296,9 @@ class DVDRemuxer:
         if self.subs_params:
             subs_params = self.subs_params
         else:
-            for vobsub in self.lsdvd["track"][title_idx - 1].get("subp"):
-                if vobsub["langcode"] in self.langcodes:
-                    subs_params.append([vobsub["ix"], vobsub["langcode"]])
+            for vobsub in self.lsdvd.track[title_idx - 1].subp:
+                if vobsub.langcode in self.langcodes:
+                    subs_params.append([vobsub.ix, vobsub.langcode])
 
         return subs_params
 
@@ -306,7 +306,7 @@ class DVDRemuxer:
         self, type: str, title_idx: int, idx: int, langcode: str
     ) -> str:
         if langcode == "undefined":
-            langcode = self.lsdvd["track"][title_idx - 1][type][idx - 1]["langcode"]
+            langcode = getattr(self.lsdvd.track[title_idx - 1], type)[idx - 1].langcode
 
         if langcode in wrong_lang_codes:
             langcode = "und"
