@@ -30,3 +30,6 @@ clean:
 	rm -f dvd-remuxer *.vob *.idx *.sub *_chapters.txt *.mkv
 	find . -name "*.pyc" -delete
 	find . -name "*.class" -delete
+
+tests:
+	coverage run --rcfile ./pyproject.toml -m unittest && coverage report && coverage xml && rm ./.coverage
