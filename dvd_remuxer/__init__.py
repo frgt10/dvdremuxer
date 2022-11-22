@@ -40,19 +40,7 @@ def _real_main():
     if args.verbose:
         remuxer.dvd_info()
 
-    titles_idx = []
-
-    if args.title_idx:
-        titles_idx = args.title_idx
-    elif args.all_titles:
-        print("Remuxing all titles")
-        titles_idx = lsdvd_obj.all_titles_idx()
-    else:
-        print(
-            "No titles specified. Use longest title #%i."
-            % (lsdvd_obj.longest_title_idx())
-        )
-        titles_idx.append(lsdvd_obj.longest_title_idx())
+    titles_idx = _get_titles(args, lsdvd_obj)
 
     if args.add_sub_langcode:
         remuxer.langcodes = +args.add_sub_langcode
@@ -68,6 +56,24 @@ def _real_main():
 
     for idx in titles_idx:
         getattr(remuxer, action)(idx)
+
+
+def _get_titles(args, lsdvd_obj):
+    titles_idx = []
+
+    if args.title_idx:
+        titles_idx = args.title_idx
+    elif args.all_titles:
+        print("Remuxing all titles")
+        titles_idx = lsdvd_obj.all_titles_idx()
+    else:
+        print(
+            "No titles specified. Use longest title #%i."
+            % (lsdvd_obj.longest_title_idx())
+        )
+        titles_idx.append(lsdvd_obj.longest_title_idx())
+
+    return titles_idx
 
 
 def main():
