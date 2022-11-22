@@ -48,6 +48,7 @@ def create_argparser():
             Utility programs:
             - lsdvd
             - mplayer
+            - mencoder
             - mkvmerge"""
         ),
     )
