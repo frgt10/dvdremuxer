@@ -53,6 +53,9 @@ class TestLsDVD(unittest.TestCase):
 
         self.assertEqual(cm.exception.code, 2)
 
+    def test_longest_title_idx(self):
+        self.assertEqual(self.lsdvd.longest_title_idx(), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

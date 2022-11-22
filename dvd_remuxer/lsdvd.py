@@ -36,3 +36,6 @@ class lsdvd:
     def get_lsdvd_output(device: str) -> str:
         data = subprocess.Popen(["lsdvd", "-x", "-Oy", device], stdout=subprocess.PIPE)
         return data.communicate()[0].decode("utf-8", errors="ignore")
+
+    def longest_title_idx(self) -> int:
+        return self.dvd_info["longest_track"]

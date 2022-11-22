@@ -50,9 +50,9 @@ def _real_main():
     else:
         print(
             "No titles specified. Use longest title #%i."
-            % (remuxer.longest_title_idx())
+            % (lsdvd_obj.longest_title_idx())
         )
-        titles_idx.append(remuxer.longest_title_idx())
+        titles_idx.append(lsdvd_obj.longest_title_idx())
 
     if args.add_sub_langcode:
         remuxer.langcodes = +args.add_sub_langcode

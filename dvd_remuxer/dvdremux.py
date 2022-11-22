@@ -164,9 +164,6 @@ class DVDRemuxer:
                 except:
                     print("Oops!")
 
-    def longest_title_idx(self) -> int:
-        return self.lsdvd["longest_track"]
-
     def all_titles_idx(self):
         titles = []
         for track in self.lsdvd.get("track"):
