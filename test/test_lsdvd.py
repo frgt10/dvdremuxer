@@ -46,6 +46,13 @@ class TestLsDVD(unittest.TestCase):
                                 "startcell": 3,
                             },
                         ],
+                        "subp": [
+                            {
+                                "ix": 1,
+                                "langcode": "ru",
+                                "language": "Russian",
+                            },
+                        ],
                     },
                     {
                         "ix": 2,

@@ -105,11 +105,19 @@ class DVDRemuxer:
 
         merge_args.append(file_stream)
 
+        dumpvobsub_args = []
+
         for sub_idx, langcode in self._get_title_subs_params(title_idx):
             langcode = self._normalize_langcode("vobp", title_idx, sub_idx, langcode)
 
-            file_vobsub_idx, file_vobsub_sub = self.dumpvobsub(
+            file_vobsub, file_vobsub_idx, file_vobsub_sub = self.gen_vobsub_filenames(
                 title_idx, sub_idx, langcode
+            )
+
+            dumpvobsub_cmd = self.gen_dumpvobsub_cmd(outfile, title_idx, sub_idx)
+
+            dumpvobsub_args.append(
+                (dumpvobsub_cmd, file_vobsub_idx, file_vobsub_sub, langcode)
             )
 
             in_file_number += 1  # each subtitle track in separate file
@@ -143,6 +151,10 @@ class DVDRemuxer:
 
         print("dump stream")
         self._perform_dumpstream(file_stream, dumpstream_cmd)
+
+        for args in dumpvobsub_args:
+            print("extracting subtitle %s" % (args[3]))
+            self._perform_dumpvobsub(*args)
 
         print("dump chapters")
         self._perform_dumpchapters(file_chapters, chapters)
@@ -247,6 +259,17 @@ class DVDRemuxer:
     def dumpvobsub(self, title_idx: int, sub_ix: int, langcode: str):
         print("extracting subtitle %i lang %s" % (sub_ix, langcode))
 
+        outfile, outfile_idx, outfile_sub = self.gen_vobsub_filenames(
+            title_idx, sub_ix, langcode
+        )
+
+        dump_args = self.gen_dumpvobsub_cmd(outfile, title_idx, sub_ix)
+
+        self._perform_dumpvobsub(dump_args, outfile_idx, outfile_sub, langcode)
+
+        return outfile_idx, outfile_sub
+
+    def gen_vobsub_filenames(self, title_idx: int, sub_ix: int, langcode: str) -> tuple:
         outfile = self.tmp_dir / (
             "%s_%i_vobsub_%i_%s" % (self.file_prefix, title_idx, sub_ix, langcode)
         )
@@ -254,44 +277,53 @@ class DVDRemuxer:
         outfile_idx = outfile.with_suffix(".idx")
         outfile_sub = outfile.with_suffix(".sub")
 
-        if not (outfile_idx.exists() and outfile_sub.exists()) or self.rewrite:
-            dump_args = [
-                "mencoder",
-                "-dvd-device",
-                self.device,
-                "dvd://%i" % (title_idx),
-                "-vobsubout",
-                outfile,
-                "-vobsuboutindex",
-                "%i" % (sub_ix),
-                "-sid",
-                "%i" % (sub_ix - 1),
-                "-ovc",
-                "copy",
-                "-oac",
-                "copy",
-                "-nosound",
-                "-o",
-                "/dev/null",
-                "-vf",
-                "harddup",
-            ]
+        return outfile, outfile_idx, outfile_sub
 
-            if not self.dry_run:
-                outfile_idx.open(mode="w").close()
-                outfile_sub.open(mode="w").close()
+    def gen_dumpvobsub_cmd(self, outfile: int, title_idx: int, sub_ix: int) -> list:
+        return [
+            "mencoder",
+            "-dvd-device",
+            self.device,
+            "dvd://%i" % (title_idx),
+            "-vobsubout",
+            outfile,
+            "-vobsuboutindex",
+            "%i" % (sub_ix),
+            "-sid",
+            "%i" % (sub_ix - 1),
+            "-ovc",
+            "copy",
+            "-oac",
+            "copy",
+            "-nosound",
+            "-o",
+            "/dev/null",
+            "-vf",
+            "harddup",
+        ]
 
-            self._subprocess_run(
-                dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-            )
+    def _perform_dumpvobsub(
+        self,
+        dump_args: list,
+        outfile_idx: Path,
+        outfile_sub: Path,
+        langcode: str,
+    ) -> None:
+        if outfile_idx.exists() or outfile_sub.exists():
+            if self.rewrite:
+                self._clear_file(outfile_idx)
+                self._clear_file(outfile_sub)
+            else:
+                return
+
+        self._subprocess_run(
+            dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
 
         self._fix_vobsub_lang_id(outfile_idx, langcode)
 
-        return outfile_idx, outfile_sub
-
     def _fix_vobsub_lang_id(self, idx_file: Path, langcode: str):
         if self.dry_run:
-            print("_fix_vobsub_lang_id")
             return
 
         f = idx_file.open(mode="r")
@@ -322,6 +354,12 @@ class DVDRemuxer:
 
         with outfile.open(mode="w") as f:
             print(data, file=f)
+
+    def _clear_file(self, file: Path) -> None:
+        if self.dry_run:
+            return
+
+        file.open(mode="w").close()
 
     def _get_title_subs_params(self, title_idx: int) -> list:
         subs_params = []
