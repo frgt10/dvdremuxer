@@ -45,12 +45,12 @@ class Test_build_dumpstream_cmd(TestDumpstreamBase):
         )
 
 
-class Test_run_dumpstream(TestDumpstreamBase):
+class Test_perform_dumpstream(TestDumpstreamBase):
     def test_outfile_exists(self):
         self.remuxer._subprocess_run = MagicMock()
 
         with patch.object(Path, "exists", return_value=True) as mock_method:
-            self.remuxer._run_dumpstream(self.outfile, [])
+            self.remuxer._perform_dumpstream(self.outfile, [])
 
         self.remuxer._subprocess_run.assert_not_called
 
@@ -60,7 +60,7 @@ class Test_run_dumpstream(TestDumpstreamBase):
         dump_cmd = ["binary", "arg1", "arg2"]
 
         with patch.object(Path, "exists", return_value=True) as mock_method:
-            self.remuxer._run_dumpstream(self.outfile, dump_cmd)
+            self.remuxer._perform_dumpstream(self.outfile, dump_cmd)
 
         self.remuxer._subprocess_run.assert_called_with(dump_cmd, stdout=-3, stderr=-3)
 
@@ -70,7 +70,7 @@ class Test_run_dumpstream(TestDumpstreamBase):
         dump_cmd = ["binary", "arg1", "arg2"]
 
         with patch.object(Path, "exists", return_value=False) as mock_method:
-            self.remuxer._run_dumpstream(self.outfile, dump_cmd)
+            self.remuxer._perform_dumpstream(self.outfile, dump_cmd)
 
         self.remuxer._subprocess_run.assert_called_with(dump_cmd, stdout=-3, stderr=-3)
 

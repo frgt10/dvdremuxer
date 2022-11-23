@@ -140,7 +140,7 @@ class DVDRemuxer:
         merge_args.append(track_order)
 
         print("dump stream")
-        self._run_dumpstream(file_stream, dumpstream_cmd)
+        self._perform_dumpstream(file_stream, dumpstream_cmd)
 
         print("merge tracks")
         self._subprocess_run(merge_args)
@@ -173,7 +173,7 @@ class DVDRemuxer:
         outfile, dump_args = self.build_dumpstream_cmd(title_idx)
 
         print("dump stream")
-        self._run_dumpstream(outfile, dump_args)
+        self._perform_dumpstream(outfile, dump_args)
 
         return outfile
 
@@ -192,7 +192,7 @@ class DVDRemuxer:
 
         return outfile, dump_args
 
-    def _run_dumpstream(self, outfile: Path, dump_args: list) -> None:
+    def _perform_dumpstream(self, outfile: Path, dump_args: list) -> None:
         if not outfile.exists() or self.rewrite:
             self._subprocess_run(
                 dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
