@@ -125,7 +125,9 @@ class DVDRemuxer:
             track_order += ",%i:0" % (in_file_number)
 
         if len(self.lsdvd.track[title_idx - 1].chapter) > 1:
-            file_chapters = self.dumpchapters(title_idx)
+            file_chapters = self.gen_chapters_filename(title_idx)
+
+            chapters = self.gen_chapters(title_idx)
 
             self.temp_files.append(file_chapters)
 
@@ -141,6 +143,9 @@ class DVDRemuxer:
 
         print("dump stream")
         self._perform_dumpstream(file_stream, dumpstream_cmd)
+
+        print("dump chapters")
+        self._perform_dumpchapters(file_chapters, chapters)
 
         print("merge tracks")
         self._subprocess_run(merge_args)
@@ -201,29 +206,38 @@ class DVDRemuxer:
     def dumpchapters(self, title_idx: int) -> Path:
         print("dump chapters")
 
-        outfile = self.tmp_dir / ("%s_%i_chapters.txt" % (self.file_prefix, title_idx))
+        outfile = self.gen_chapters_filename(title_idx)
 
-        if not outfile.exists() or self.rewrite:
-            start = 0.000
-            chapters = ""
+        chapters = self.gen_chapters(title_idx)
 
-            for chapter in self.lsdvd.track[title_idx - 1].chapter:
-                chapters += "CHAPTER%02d=%s\n" % (
-                    chapter.ix,
-                    convert_seconds_to_hhmmss(start),
-                )
-                chapters += "CHAPTER%02dNAME=\n" % (chapter.ix)
+        if self.verbose:
+            print(chapters)
 
-                start += chapter.length
-
-            if self.verbose:
-                print(chapters)
-
-            if not self.dry_run:
-                with outfile.open(mode="w") as f:
-                    print(chapters, file=f)
+        self._perform_dumpchapters(outfile, chapters)
 
         return outfile
+
+    def gen_chapters_filename(self, title_idx: int) -> str:
+        return self.tmp_dir / ("%s_%i_chapters.txt" % (self.file_prefix, title_idx))
+
+    def gen_chapters(self, title_idx: int) -> str:
+        start = 0.000
+        chapters = ""
+
+        for chapter in self.lsdvd.track[title_idx - 1].chapter:
+            chapters += "CHAPTER%02d=%s\n" % (
+                chapter.ix,
+                convert_seconds_to_hhmmss(start),
+            )
+            chapters += "CHAPTER%02dNAME=\n" % (chapter.ix)
+
+            start += chapter.length
+
+        return chapters
+
+    def _perform_dumpchapters(self, outfile: Path, chapters: str) -> Path:
+        if not outfile.exists() or self.rewrite:
+            self._save_to_file(outfile, chapters)
 
     def dumpvobsubs(self, title_idx: int):
         for vobsub in self.lsdvd.track[title_idx - 1].subp:
@@ -301,6 +315,13 @@ class DVDRemuxer:
 
         if not self.dry_run:
             subprocess.run(cmd, **kwargs)
+
+    def _save_to_file(self, outfile: Path, data: str) -> None:
+        if self.dry_run:
+            return
+
+        with outfile.open(mode="w") as f:
+            print(data, file=f)
 
     def _get_title_subs_params(self, title_idx: int) -> list:
         subs_params = []

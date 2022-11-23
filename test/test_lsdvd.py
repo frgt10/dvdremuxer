@@ -29,18 +29,38 @@ class TestLsDVD(unittest.TestCase):
                     {
                         "ix": 1,
                         "length": 3600.000,
+                        "chapter": [
+                            {
+                                "ix": 1,
+                                "length": 100.880,
+                                "startcell": 1,
+                            },
+                            {
+                                "ix": 2,
+                                "length": 69.160,
+                                "startcell": 2,
+                            },
+                            {
+                                "ix": 3,
+                                "length": 78.000,
+                                "startcell": 3,
+                            },
+                        ],
                     },
                     {
                         "ix": 2,
                         "length": 600.000,
+                        "chapter": [],
                     },
                     {
                         "ix": 3,
                         "length": 300.000,
+                        "chapter": [],
                     },
                     {
                         "ix": 4,
                         "length": 0.100,
+                        "chapter": [],
                     },
                 ],
                 "longest_track": 1,
