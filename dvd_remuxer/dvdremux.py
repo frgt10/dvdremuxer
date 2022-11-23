@@ -55,7 +55,7 @@ class DVDRemuxer:
 
         merge_args = ["mkvmerge", "--output", outfile]
 
-        file_stream = self.dumpstream(title_idx)
+        file_stream, dumpstream_cmd = self.build_dumpstream_cmd(title_idx)
 
         in_file_number = 0  # audio and video in first file
 
@@ -136,8 +136,10 @@ class DVDRemuxer:
         merge_args.append("--track-order")
         merge_args.append(track_order)
 
-        print("merge tracks")
+        print("dump stream")
+        self._run_dumpstream(file_stream, dumpstream_cmd)
 
+        print("merge tracks")
         self._subprocess_run(merge_args)
 
         if not self.dry_run:
@@ -165,26 +167,33 @@ class DVDRemuxer:
                     print("Oops!")
 
     def dumpstream(self, title_idx: int) -> Path:
-        print("dump stream")
+        outfile, dump_args = self.build_dumpstream_cmd(title_idx)
 
+        print("dump stream")
+        self._run_dumpstream(outfile, dump_args)
+
+        return outfile
+
+    def build_dumpstream_cmd(self, title_idx: int) -> list:
         outfile = self.tmp_dir / ("%s_%i_video.vob" % (self.file_prefix, title_idx))
 
-        if not outfile.exists() or self.rewrite:
-            dump_args = [
-                "mplayer",
-                "-dvd-device",
-                self.device,
-                "dvd://%i" % (title_idx),
-                "-dumpstream",
-                "-dumpfile",
-                outfile,
-            ]
+        dump_args = [
+            "mplayer",
+            "-dvd-device",
+            self.device,
+            "dvd://%i" % (title_idx),
+            "-dumpstream",
+            "-dumpfile",
+            outfile,
+        ]
 
+        return outfile, dump_args
+
+    def _run_dumpstream(self, outfile: Path, dump_args: list) -> None:
+        if not outfile.exists() or self.rewrite:
             self._subprocess_run(
                 dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
             )
-
-        return outfile
 
     def dumpchapters(self, title_idx: int) -> Path:
         print("dump chapters")
