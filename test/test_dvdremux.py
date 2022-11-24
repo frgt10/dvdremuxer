@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import MagicMock
 
 from tempfile import TemporaryDirectory
 from .dvdremux_test import DVDRemuxerTest
@@ -73,6 +74,12 @@ class Test_DVDRemuxMethods(unittest.TestCase):
 
         self.assertListEqual(
             self.remuxer._get_title_subs_params(1), [[1, "ru"], [2, "en"]]
+        )
+
+    def test_dvd_info(self):
+        self.remuxer.dvd_info()
+        self.remuxer._subprocess_run.assert_called_with(
+            ["lsdvd", "-x", self.remuxer.device]
         )
 
 
