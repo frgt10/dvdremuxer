@@ -15,6 +15,22 @@ class TestDVDRemuxInit(unittest.TestCase):
 
         self.assertIsInstance(self.remuxer.tmp_dir_obj, TemporaryDirectory)
 
+    def test_lsdvd_title_empty(self):
+        lsdvd_obj = lsdvd_test.read(".")
+        lsdvd_obj.title = "unknown"
+
+        self.remuxer = DVDRemuxerTest(".", lsdvd=lsdvd_obj)
+
+        self.assertEqual(self.remuxer.file_prefix, "dvd")
+
+    def test_lsdvd_title_eq_unknown(self):
+        lsdvd_obj = lsdvd_test.read(".")
+        lsdvd_obj.title = "unknown"
+
+        self.remuxer = DVDRemuxerTest(".", lsdvd=lsdvd_obj)
+
+        self.assertEqual(self.remuxer.file_prefix, "dvd")
+
 
 if __name__ == "__main__":
     unittest.main()
