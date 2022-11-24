@@ -31,6 +31,10 @@ class TestDVDRemuxInit(unittest.TestCase):
 
         self.assertEqual(self.remuxer.file_prefix, "dvd")
 
+    def test_without_lsdvd(self):
+        with self.assertRaises(Exception) as cm:
+            self.remuxer = DVDRemuxerTest(".", lsdvd=None)
+
 
 if __name__ == "__main__":
     unittest.main()
