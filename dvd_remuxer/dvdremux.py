@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import subprocess
-import tempfile
+from tempfile import TemporaryDirectory
 from pathlib import Path
 from datetime import datetime, timedelta
 from pprint import pprint
@@ -27,7 +27,7 @@ class DVDRemuxer:
         self.tmp_dir_obj = None
 
         if options.get("use_sys_tmp_dir"):
-            self.tmp_dir_obj = tempfile.TemporaryDirectory(prefix="_dvdremux")
+            self.tmp_dir_obj = TemporaryDirectory(prefix="_dvdremux")
             self.tmp_dir = Path(self.tmp_dir_obj.name)
         else:
             self.tmp_dir = Path.cwd()
