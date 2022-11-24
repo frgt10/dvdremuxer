@@ -18,3 +18,6 @@ class DVDRemuxerTest(DVDRemuxer):
 
     def _fix_vobsub_lang_id(self, idx_file: Path, langcode: str):
         pass
+
+    def _rm_temp_files(self) -> None:
+        pass
