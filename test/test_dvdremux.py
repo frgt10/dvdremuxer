@@ -36,5 +36,28 @@ class TestDVDRemuxInit(unittest.TestCase):
             self.remuxer = DVDRemuxerTest(".", lsdvd=None)
 
 
+class Test_DVDRemuxMethods(unittest.TestCase):
+    def setUp(self):
+        self.remuxer = DVDRemuxerTest(
+            ".",
+            lsdvd=lsdvd_test.read("."),
+            dry_run=False,
+            keep_temp_files=False,
+            rewrite=False,
+            use_sys_tmp_dir=False,
+            verbose=False,
+        )
+        self.remuxer._subprocess_run = MagicMock()
+
+    def test_normalize_langcode_empty(self):
+        self.assertEqual(self.remuxer._normalize_langcode("audio", 1, 0, ""), "und")
+
+    def test_normalize_langcode_xx(self):
+        self.assertEqual(self.remuxer._normalize_langcode("audio", 1, 0, "xx"), "und")
+
+    def test_normalize_langcode_xx(self):
+        self.assertEqual(
+            self.remuxer._normalize_langcode("audio", 1, 2, "undefined"), "ru"
+        )
 if __name__ == "__main__":
     unittest.main()
