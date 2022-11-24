@@ -59,5 +59,22 @@ class Test_DVDRemuxMethods(unittest.TestCase):
         self.assertEqual(
             self.remuxer._normalize_langcode("audio", 1, 2, "undefined"), "ru"
         )
+
+    def test_get_title_subs_params_defaults(self):
+        self.assertListEqual(self.remuxer._get_title_subs_params(1), [[1, "ru"]])
+
+    def test_get_title_subs_params_empty(self):
+        self.remuxer.default_langcodes = ["jp", "ko"]
+
+        self.assertListEqual(self.remuxer._get_title_subs_params(1), [])
+
+    def test_get_title_subs_params_specified(self):
+        self.remuxer.subs_params = [[1, "ru"], [2, "en"]]
+
+        self.assertListEqual(
+            self.remuxer._get_title_subs_params(1), [[1, "ru"], [2, "en"]]
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
