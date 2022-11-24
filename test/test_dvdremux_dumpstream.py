@@ -20,14 +20,11 @@ class TestDumpstreamBase(unittest.TestCase):
         self.outfile = self.remuxer.tmp_dir / ("TEST_DVD_1_video.vob")
 
 
-class Test_dumpstream(TestDumpstreamBase):
+class TestDumpstream(TestDumpstreamBase):
     def test_dumpstream(self):
         self.assertEqual(self.remuxer.dumpstream(1), self.outfile)
 
-
-class Test_build_dumpstream_cmd(TestDumpstreamBase):
     def test_build_dumpstream_cmd(self):
-
         self.assertTupleEqual(
             self.remuxer.build_dumpstream_cmd(1),
             (
@@ -43,6 +40,9 @@ class Test_build_dumpstream_cmd(TestDumpstreamBase):
                 ],
             ),
         )
+
+    def test_gen_dumpstream_filename(self):
+        self.assertEqual(self.remuxer.gen_dumpstream_filename(1), self.outfile)
 
 
 class Test_perform_dumpstream(TestDumpstreamBase):

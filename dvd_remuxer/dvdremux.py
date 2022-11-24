@@ -195,7 +195,7 @@ class DVDRemuxer:
         return outfile
 
     def build_dumpstream_cmd(self, title_idx: int) -> list:
-        outfile = self.tmp_dir / ("%s_%i_video.vob" % (self.file_prefix, title_idx))
+        outfile = self.gen_dumpstream_filename(title_idx)
 
         dump_args = [
             "mplayer",
@@ -208,6 +208,9 @@ class DVDRemuxer:
         ]
 
         return outfile, dump_args
+
+    def gen_dumpstream_filename(self, title_idx: int) -> list:
+        return self.tmp_dir / ("%s_%i_video.vob" % (self.file_prefix, title_idx))
 
     def _perform_dumpstream(self, outfile: Path, dump_args: list) -> None:
         if not outfile.exists() or self.rewrite:
