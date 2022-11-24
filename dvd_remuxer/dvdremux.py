@@ -174,18 +174,6 @@ class DVDRemuxer:
         if not self.keep_temp_files and not self.tmp_dir_obj:
             self._rm_temp_files()
 
-    def _rm_temp_files(self) -> None:
-        print("remove temp files")
-
-        if self.dry_run:
-            pprint(self.temp_files)
-        else:
-            while self.temp_files:
-                try:
-                    self.temp_files.pop().unlink()
-                except:
-                    print("Oops!")
-
     def dumpstream(self, title_idx: int) -> Path:
         outfile, dump_args = self.build_dumpstream_cmd(title_idx)
 
@@ -363,6 +351,16 @@ class DVDRemuxer:
             return
 
         file.open(mode="w").close()
+
+    def _rm_temp_files(self) -> None:
+        if self.dry_run:
+            pprint(self.temp_files)
+        else:
+            while self.temp_files:
+                try:
+                    self.temp_files.pop().unlink()
+                except:
+                    print("Oops!")
 
     def _get_title_subs_params(self, title_idx: int) -> list:
         subs_params = []
