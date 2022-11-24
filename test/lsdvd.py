@@ -12,6 +12,16 @@ lsdvd = {
     {
       'ix' : 1,
       'length' : 3600.000,
+      'audio' : [
+        {
+          'ix' : 1,
+          'langcode' : 'en',
+        },
+        {
+          'ix' : 2,
+          'langcode' : 'ru',
+        },
+      ],
       'chapter' : [
         {
           'ix' : 1,
