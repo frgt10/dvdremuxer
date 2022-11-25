@@ -21,3 +21,6 @@ class DVDRemuxerTest(DVDRemuxer):
 
     def _rm_temp_files(self) -> None:
         pass
+
+    def _unlink_empty_file(self, file: Path) -> None:
+        pass

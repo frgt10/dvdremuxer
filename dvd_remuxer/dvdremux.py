@@ -77,14 +77,8 @@ class DVDRemuxer:
         print("merge tracks")
         self._subprocess_run(mkvmerge_cmd)
 
-        if not self.dry_run:
-            try:
-                if outfile.stat().st_size == 0:
-                    # An error occurred during the merge.
-                    # Unlink file of zero size.
-                    outfile.unlink()
-            except:
-                print("Oops! %s" % outfile)
+        # Unlink а zero size file, when error occurred during the merge.
+        self._unlink_empty_file(outfile)
 
         if not self.keep_temp_files and not self.tmp_dir_obj:
             print("remove temp files")
@@ -347,6 +341,16 @@ class DVDRemuxer:
             return
 
         file.open(mode="w").close()
+
+    def _unlink_empty_file(self, file: Path) -> None:
+        if self.dry_run:
+            return
+
+        try:
+            if file.stat().st_size == 0:
+                file.unlink()
+        except:
+            print("Oops! %s" % file)
 
     def _rm_temp_files(self) -> None:
         if self.dry_run:
