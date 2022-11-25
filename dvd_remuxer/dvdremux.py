@@ -84,6 +84,8 @@ class DVDRemuxer:
             print("remove temp files")
             self._rm_temp_files()
 
+        return outfile
+
     def gen_mkvmerge_cmd(self, title_idx: int) -> list():
         outfile = Path("%s_%i.DVDRemux.mkv" % (self.file_prefix, title_idx))
 
