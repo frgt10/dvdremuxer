@@ -310,14 +310,15 @@ class DVDRemuxer:
         f = idx_file.open(mode="r")
         content = f.read()
         f.close()
-        content_new = re.sub(
-            "id: , index", f"id: {langcode}, index", content, flags=re.M
-        )
+        content_new = self._fix_vobsub_lang_id(content, langcode)
 
         if content != content_new:
             f = idx_file.open(mode="w")
             f.write(content_new)
             f.close()
+
+    def _fix_vobsub_lang_id(self, content: str, langcode: str) -> str:
+        return re.sub("id: , index", f"id: {langcode}, index", content, flags=re.M)
 
     def list_languages(self) -> None:
         self._subprocess_run(["mkvmerge", "--list-languages"])

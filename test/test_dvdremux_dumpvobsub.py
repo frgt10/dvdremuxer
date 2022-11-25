@@ -99,6 +99,14 @@ class Test_dumpvobsub(unittest.TestCase):
 
         self.remuxer._clear_file.assert_not_called
 
+    def test_fix_vobsub_lang_id(self):
+        vobsub_with_wrong_lancode = "id: , index"
+
+        self.assertEqual(
+            self.remuxer._fix_vobsub_lang_id(vobsub_with_wrong_lancode, "ru"),
+            "id: ru, index",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
