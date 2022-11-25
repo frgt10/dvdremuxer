@@ -65,7 +65,7 @@ class Test_DVDRemuxMethods(unittest.TestCase):
         self.assertListEqual(self.remuxer._get_title_subs_params(1), [[1, "ru"]])
 
     def test_get_title_subs_params_empty(self):
-        self.remuxer.default_langcodes = ["jp", "ko"]
+        self.remuxer.langcodes = ["jp", "ko"]
 
         self.assertListEqual(self.remuxer._get_title_subs_params(1), [])
 

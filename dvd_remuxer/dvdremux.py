@@ -36,7 +36,7 @@ class DVDRemuxer:
             print("Temp directory: %s" % (self.tmp_dir))
 
         self.temp_files = []
-        self.default_langcodes = ["ru", "en"]
+        self.langcodes = ["ru", "en"]
 
         if not self.lsdvd:
             raise Exception("Path is not valid video DVD")
@@ -244,7 +244,7 @@ class DVDRemuxer:
 
     def dumpvobsubs(self, title_idx: int):
         for vobsub in self.lsdvd.track[title_idx - 1].subp:
-            if vobsub.langcode in self.default_langcodes:
+            if vobsub.langcode in self.langcodes:
                 self.dumpvobsub(title_idx, vobsub.ix, vobsub.langcode)
 
     def dumpvobsub(self, title_idx: int, sub_ix: int, langcode: str):
@@ -369,7 +369,7 @@ class DVDRemuxer:
             subs_params = self.subs_params
         else:
             for vobsub in self.lsdvd.track[title_idx - 1].subp:
-                if vobsub.langcode in self.default_langcodes:
+                if vobsub.langcode in self.langcodes:
                     subs_params.append([vobsub.ix, vobsub.langcode])
 
         return subs_params
