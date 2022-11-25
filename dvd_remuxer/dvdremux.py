@@ -51,7 +51,10 @@ class DVDRemuxer:
     def remux_to_mkv(self, title_idx: int) -> None:
         print(
             "remuxing title #%i (%s)"
-            % (title_idx, convert_seconds_to_hhmmss(self.lsdvd.track[title_idx].length))
+            % (
+                title_idx,
+                convert_seconds_to_hhmmss(self.lsdvd.track[title_idx - 1].length),
+            )
         )
 
         outfile = Path("%s_%i.DVDRemux.mkv" % (self.file_prefix, title_idx))
