@@ -60,7 +60,10 @@ class TestLsDVD(unittest.TestCase):
                             {
                                 "ix": 1,
                                 "langcode": "ru",
-                                "language": "Russian",
+                            },
+                            {
+                                "ix": 2,
+                                "langcode": "fr",
                             },
                         ],
                     },

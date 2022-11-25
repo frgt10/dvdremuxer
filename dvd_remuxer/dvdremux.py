@@ -237,10 +237,15 @@ class DVDRemuxer:
         if not outfile.exists() or self.rewrite:
             self._save_to_file(outfile, chapters)
 
-    def dumpvobsubs(self, title_idx: int):
+    def dumpvobsubs(self, title_idx: int) -> dict:
+        output_files = {}
         for vobsub in self.lsdvd.track[title_idx - 1].subp:
             if vobsub.langcode in self.langcodes:
-                self.dumpvobsub(title_idx, vobsub.ix, vobsub.langcode)
+                output_files[vobsub.langcode] = self.dumpvobsub(
+                    title_idx, vobsub.ix, vobsub.langcode
+                )
+
+        return output_files
 
     def dumpvobsub(self, title_idx: int, sub_ix: int, langcode: str):
         print("extracting subtitle %i lang %s" % (sub_ix, langcode))

@@ -107,6 +107,17 @@ class Test_dumpvobsub(unittest.TestCase):
             "id: ru, index",
         )
 
+    def test_dumpvobsubs(self):
+        self.assertDictEqual(
+            self.remuxer.dumpvobsubs(1),
+            {
+                "ru": (
+                    self.outfile.with_suffix(".idx"),
+                    self.outfile.with_suffix(".sub"),
+                )
+            },
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
