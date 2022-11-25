@@ -37,6 +37,10 @@ class lsdvd:
         return lsdvd_data
 
     @staticmethod
+    def get_printable_dvd_info(device: str) -> str:
+        subprocess.run(["lsdvd", "-x", device])
+
+    @staticmethod
     def clear_lsdvd_output(lsdvd_output: str) -> str:
         return re.sub("(?m)^libdvdread:.*\n?", "", lsdvd_output).replace("lsdvd = ", "")
 

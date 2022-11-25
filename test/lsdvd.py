@@ -80,3 +80,7 @@ class lsdvd_test(lsdvd):
     @staticmethod
     def get_lsdvd_output(device: str) -> str:
         return lsdvd_otput
+
+    @staticmethod
+    def get_printable_dvd_info(device: str) -> str:
+        return "Disc Title: TEST_DVD"

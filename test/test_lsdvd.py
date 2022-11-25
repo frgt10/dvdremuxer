@@ -93,6 +93,9 @@ class TestLsDVD(unittest.TestCase):
 
         self.assertEqual(cm.exception.code, 2)
 
+    def test_get_printable_dvd_info(self):
+        self.assertEqual(lsdvd_test.get_printable_dvd_info("."), "Disc Title: TEST_DVD")
+
     def test_all_titles_idx(self):
         self.assertListEqual(self.lsdvd.all_titles_idx(), [1, 2, 3])
 
