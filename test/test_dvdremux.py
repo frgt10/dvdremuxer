@@ -76,18 +76,6 @@ class Test_DVDRemuxMethods(unittest.TestCase):
             self.remuxer._get_title_subs_params(1), [[1, "ru"], [2, "en"]]
         )
 
-    def test_dvd_info(self):
-        self.remuxer.dvd_info()
-        self.remuxer._subprocess_run.assert_called_with(
-            ["lsdvd", "-x", self.remuxer.device]
-        )
-
-    def test_list_languages(self):
-        self.remuxer.list_languages()
-        self.remuxer._subprocess_run.assert_called_with(
-            ["mkvmerge", "--list-languages"]
-        )
-
 
 if __name__ == "__main__":
     unittest.main()

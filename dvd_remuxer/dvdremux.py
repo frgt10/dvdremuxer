@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 from tempfile import TemporaryDirectory
 from pathlib import Path
 from datetime import datetime, timedelta
 from pprint import pprint
 import re
+
+from dvd_remuxer.lsdvd import lsdvd
 
 wrong_lang_codes = ["xx", ""]
 
@@ -44,9 +47,6 @@ class DVDRemuxer:
         self.file_prefix = "dvd"
         if self.lsdvd.title and self.lsdvd.title != "unknown":
             self.file_prefix = self.lsdvd.title
-
-    def dvd_info(self) -> None:
-        self._subprocess_run(["lsdvd", "-x", self.device])
 
     def remux_to_mkv(self, title_idx: int) -> None:
         print(
@@ -330,9 +330,6 @@ class DVDRemuxer:
     def _fix_vobsub_lang_id(self, content: str, langcode: str) -> str:
         return re.sub("id: , index", f"id: {langcode}, index", content, flags=re.M)
 
-    def list_languages(self) -> None:
-        self._subprocess_run(["mkvmerge", "--list-languages"])
-
     def _subprocess_run(self, cmd: list, **kwargs) -> None:
         if self.dry_run or self.verbose:
             print(subprocess.list2cmdline(cmd))
@@ -401,3 +398,82 @@ def convert_seconds_to_hhmmss(seconds: float) -> str:
     return (datetime.utcfromtimestamp(0) + timedelta(seconds=seconds)).strftime(
         "%H:%M:%S.%f"
     )[:-3]
+
+
+class RemuxService:
+    def __init__(self, dvd_info_reader_cls: lsdvd, remuxer_cls: DVDRemuxer, args):
+        self.args = args
+        self.dvd_info_reader_cls = dvd_info_reader_cls
+        self.remuxer_cls = remuxer_cls
+
+    def run(self):
+        if self.args.verbose:
+            print("Run with arguments:")
+            pprint(vars(self.args))
+
+        if self.args.list_languages:
+            self.list_languages()
+            sys.exit(0)
+
+        if self.args.info:
+            self.dvd_info()
+            sys.exit(0)
+
+        if self.args.verbose:
+            self.dvd_info()
+
+        lsdvd_obj = self.dvd_info_reader_cls.read(self.args.dvd)
+
+        titles_idx = self._get_titles(self.args, lsdvd_obj)
+
+        remuxer = self.remuxer_cls(
+            self.args.dvd,
+            lsdvd=lsdvd_obj,
+            dry_run=self.args.dry_run,
+            keep_temp_files=self.args.keep,
+            rewrite=self.args.rewrite,
+            use_sys_tmp_dir=self.args.use_sys_tmp_dir,
+            aspect_ratio=self.args.aspect_ratio,
+            audio_params=self.args.audio_params,
+            subs_params=self.args.subs_params,
+            split_chapters=self.args.split_chapters,
+            verbose=self.args.verbose,
+        )
+
+        if self.args.add_sub_langcode:
+            remuxer.langcodes = +self.args.add_sub_langcode
+
+        pprint(remuxer.langcodes)
+
+        action = {
+            "remux_to_mkv": "remux_to_mkv",
+            "stream": "dumpstream",
+            "subs": "dumpvobsubs",
+            "chapters": "dumpchapters",
+        }.get(self.args.action)
+
+        for idx in titles_idx:
+            getattr(remuxer, action)(idx)
+
+    def list_languages(self) -> None:
+        subprocess.run(["mkvmerge", "--list-languages"])
+
+    def dvd_info(self) -> None:
+        self.dvd_info_reader_cls.get_printable_dvd_info(self.args.dvd)
+
+    def _get_titles(self, args, lsdvd_obj):
+        titles_idx = []
+
+        if args.title_idx:
+            titles_idx = args.title_idx
+        elif args.all_titles:
+            print("Remuxing all titles")
+            titles_idx = lsdvd_obj.all_titles_idx()
+        else:
+            print(
+                "No titles specified. Use longest title #%i."
+                % (lsdvd_obj.longest_title_idx())
+            )
+            titles_idx.append(lsdvd_obj.longest_title_idx())
+
+        return titles_idx
