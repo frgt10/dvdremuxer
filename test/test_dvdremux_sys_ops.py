@@ -54,6 +54,29 @@ class TestDVDRemuxSysOps(unittest.TestCase):
 
         mock_unlink.assert_not_called()
 
+    def test_clear_file(self):
+        file_notempty = Path("test_notempty_file")
+        with file_notempty.open(mode="w") as f:
+            print(
+                "This is not enpty file for testing DVDRemuxer._clear_file method",
+                file=f,
+            )
+
+        self.remuxer._clear_file(file_notempty)
+
+        self.assertEqual(file_notempty.stat().st_size, 0)
+
+        file_notempty.unlink()
+
+    def test_clear_file_dry_run(self):
+        self.remuxer.dry_run = True
+
+        with patch.object(Path, "unlink") as mock_unlink:
+            file_notempty = Path("test_notempty_file")
+            self.remuxer._clear_file(file_notempty)
+
+        mock_unlink.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
