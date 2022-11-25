@@ -77,6 +77,42 @@ class TestDVDRemuxSysOps(unittest.TestCase):
 
         mock_unlink.assert_not_called()
 
+    def test_rm_temp_files(self):
+        file_for_remove1 = Path("file_for_remove1")
+        file_for_remove2 = Path("file_for_remove2")
+        file_for_remove1.open(mode="w").close()
+        file_for_remove2.open(mode="w").close()
+        self.assertTrue(file_for_remove1.exists())
+        self.assertTrue(file_for_remove2.exists())
+        self.remuxer.temp_files.append(file_for_remove1)
+        self.remuxer.temp_files.append(file_for_remove2)
+
+        self.remuxer._rm_temp_files()
+
+        self.assertListEqual(self.remuxer.temp_files, [])
+
+        file_for_remove1_exists = False
+        file_for_remove2_exists = False
+
+        if file_for_remove1.exists():
+            file_for_remove1_exists = True
+            file_for_remove1.unlink()
+
+        if file_for_remove2.exists():
+            file_for_remove2_exists = True
+            file_for_remove2.unlink()
+
+        self.assertFalse(file_for_remove1_exists)
+        self.assertFalse(file_for_remove2_exists)
+
+    def test_rm_temp_files_dry_run(self):
+        self.remuxer.dry_run = True
+
+        with patch.object(Path, "unlink") as mock_unlink:
+            self.remuxer._rm_temp_files()
+
+        mock_unlink.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
