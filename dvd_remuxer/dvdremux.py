@@ -301,9 +301,9 @@ class DVDRemuxer:
             dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
 
-        self._fix_vobsub_lang_id(outfile_idx, langcode)
+        self._fix_vobsub_file_content(outfile_idx, langcode)
 
-    def _fix_vobsub_lang_id(self, idx_file: Path, langcode: str):
+    def _fix_vobsub_file_content(self, idx_file: Path, langcode: str):
         if self.dry_run:
             return
 
