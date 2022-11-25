@@ -56,13 +56,46 @@ class DVDRemuxer:
 
         outfile = Path("%s_%i.DVDRemux.mkv" % (self.file_prefix, title_idx))
 
+        mkvmerge_cmd = self.gen_mkvmerge_cmd(title_idx)
+
+        file_stream = self.dumpstream(title_idx)
+        self.temp_files.append(file_stream)
+
+        for sub_idx, langcode in self._get_title_subs_params(title_idx):
+            langcode = self._normalize_langcode("vobp", title_idx, sub_idx, langcode)
+
+            file_vobsub_idx, file_vobsub_sub = self.dumpvobsub(
+                title_idx, sub_idx, langcode
+            )
+
+            self.temp_files.append(file_vobsub_idx)
+            self.temp_files.append(file_vobsub_sub)
+
+        file_chapters = self.dumpchapters(title_idx)
+        self.temp_files.append(file_chapters)
+
+        print("merge tracks")
+        self._subprocess_run(mkvmerge_cmd)
+
+        if not self.dry_run:
+            try:
+                if outfile.stat().st_size == 0:
+                    # An error occurred during the merge.
+                    # Unlink file of zero size.
+                    outfile.unlink()
+            except:
+                print("Oops! %s" % outfile)
+
+        if not self.keep_temp_files and not self.tmp_dir_obj:
+            print("remove temp files")
+            self._rm_temp_files()
+
+    def gen_mkvmerge_cmd(self, title_idx: int) -> list():
+        outfile = Path("%s_%i.DVDRemux.mkv" % (self.file_prefix, title_idx))
+
         merge_args = ["mkvmerge", "--output", outfile]
 
-        file_stream, dumpstream_cmd = self.build_dumpstream_cmd(title_idx)
-
         in_file_number = 0  # audio and video in first file
-
-        self.temp_files.append(file_stream)
 
         # video from file_stream is first track
         track_order = "%i:0" % (in_file_number)
@@ -70,6 +103,7 @@ class DVDRemuxer:
         # audio params from command line argumets
         if self.audio_params:
             audio_tracks = []
+
             for audio_idx, langcode in self.audio_params:
                 langcode = self._normalize_langcode(
                     "audio", title_idx, audio_idx, langcode
@@ -81,7 +115,7 @@ class DVDRemuxer:
                 merge_args.append("%i:%s" % (audio_idx, langcode))
 
                 # audio from file_stream just after video
-                track_order += ",%i:%s" % (in_file_number, audio_idx)
+                track_order += ",%i:%i" % (in_file_number, audio_idx)
 
             # set the necessary audio tracks
             merge_args.append("--audio-tracks")
@@ -97,15 +131,14 @@ class DVDRemuxer:
                 merge_args.append("%i:%s" % (audio.ix, langcode))
 
                 # audio from file_stream just after video
-                track_order += ",%i:%s" % (in_file_number, audio.ix)
+                track_order += ",%i:%i" % (in_file_number, audio.ix)
 
         if self.aspect_ratio:
             merge_args.append("--aspect-ratio")
             merge_args.append("0:%s" % (self.aspect_ratio))
 
+        file_stream = self.gen_dumpstream_filename(title_idx)
         merge_args.append(file_stream)
-
-        dumpvobsub_args = []
 
         for sub_idx, langcode in self._get_title_subs_params(title_idx):
             langcode = self._normalize_langcode("vobp", title_idx, sub_idx, langcode)
@@ -114,16 +147,7 @@ class DVDRemuxer:
                 title_idx, sub_idx, langcode
             )
 
-            dumpvobsub_cmd = self.gen_dumpvobsub_cmd(outfile, title_idx, sub_idx)
-
-            dumpvobsub_args.append(
-                (dumpvobsub_cmd, file_vobsub_idx, file_vobsub_sub, langcode)
-            )
-
             in_file_number += 1  # each subtitle track in separate file
-
-            self.temp_files.append(file_vobsub_idx)
-            self.temp_files.append(file_vobsub_sub)
 
             merge_args.append("--language")
             merge_args.append("0:%s" % (langcode))
@@ -134,11 +158,6 @@ class DVDRemuxer:
 
         if len(self.lsdvd.track[title_idx - 1].chapter) > 1:
             file_chapters = self.gen_chapters_filename(title_idx)
-
-            chapters = self.gen_chapters(title_idx)
-
-            self.temp_files.append(file_chapters)
-
             merge_args.append("--chapters")
             merge_args.append(file_chapters)
 
@@ -149,30 +168,7 @@ class DVDRemuxer:
         merge_args.append("--track-order")
         merge_args.append(track_order)
 
-        print("dump stream")
-        self._perform_dumpstream(file_stream, dumpstream_cmd)
-
-        for args in dumpvobsub_args:
-            print("extracting subtitle %s" % (args[3]))
-            self._perform_dumpvobsub(*args)
-
-        print("dump chapters")
-        self._perform_dumpchapters(file_chapters, chapters)
-
-        print("merge tracks")
-        self._subprocess_run(merge_args)
-
-        if not self.dry_run:
-            try:
-                if outfile.stat().st_size == 0:
-                    # An error occurred during the merge.
-                    # Unlink file of zero size.
-                    outfile.unlink()
-            except:
-                print("Oops! %s" % outfile)
-
-        if not self.keep_temp_files and not self.tmp_dir_obj:
-            self._rm_temp_files()
+        return merge_args
 
     def dumpstream(self, title_idx: int) -> Path:
         outfile, dump_args = self.build_dumpstream_cmd(title_idx)
