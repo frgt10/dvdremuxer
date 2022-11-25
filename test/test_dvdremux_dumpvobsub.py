@@ -100,11 +100,31 @@ class Test_dumpvobsub(unittest.TestCase):
         self.remuxer._clear_file.assert_not_called
 
     def test_fix_vobsub_lang_id(self):
-        vobsub_with_wrong_lancode = "id: , index"
+        vobsub_with_wrong_lancode = """
+# VobSub index file, v7 (do not modify this line!)
+#
+
+# Language index in use
+langidx: 1
+
+id: , index: 1
+timestamp: 00:13:18:239, filepos: 000000000
+        """
+
+        vobsub_fixed = """
+# VobSub index file, v7 (do not modify this line!)
+#
+
+# Language index in use
+langidx: 1
+
+id: ru, index: 1
+timestamp: 00:13:18:239, filepos: 000000000
+        """
 
         self.assertEqual(
             self.remuxer._fix_vobsub_lang_id(vobsub_with_wrong_lancode, "ru"),
-            "id: ru, index",
+            vobsub_fixed,
         )
 
     def test_dumpvobsubs(self):
