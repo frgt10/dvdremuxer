@@ -53,17 +53,23 @@ lsdvd = {
     {
       'ix' : 2,
       'length' : 600.000,
+      'audio' : [],
       'chapter' : [],
+      'subp' : [],
     },
     {
       'ix' : 3,
       'length' : 300.000,
+      'audio' : [],
       'chapter' : [],
+      'subp' : [],
     },
     {
       'ix' : 4,
       'length' : 0.100,
+      'audio' : [],
       'chapter' : [],
+      'subp' : [],
     },
   ],
   'longest_track' : 1,
