@@ -86,7 +86,7 @@ def create_argparser():
         nargs="?",
         type=lambda audio_str: get_complex_params(argparser, audio_str),
         help="audio id with langcode (optional) in necessary order (e.g. 2:ru,1,3:en)."
-        + " All languages including their ISO 639-2 codes can be listed with the --list-languages option",
+        + " All languages can be listed with `mkvmerge --list-languages`",
     )
 
     argparser.add_argument(
@@ -96,7 +96,7 @@ def create_argparser():
         nargs="?",
         type=lambda audio_str: get_complex_params(argparser, audio_str),
         help="subtitle id with langcode (optional) in necessary order (e.g. 2:ru,1,3:en)."
-        + " All languages including their ISO 639-2 codes can be listed with the --list-languages option",
+        + " All languages can be listed with `mkvmerge --list-languages`",
     )
 
     argparser.add_argument(
@@ -113,12 +113,6 @@ def create_argparser():
         dest="aspect_ratio",
         nargs="?",
         help="video aspect ratio: 16/9, 4/3",
-    )
-
-    argparser.add_argument(
-        "--list-languages",
-        action="store_true",
-        help="lists all languages and their ISO 639-2 code",
     )
 
     argparser.add_argument(

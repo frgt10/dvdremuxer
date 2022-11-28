@@ -379,10 +379,6 @@ class RemuxService:
             print("Run with arguments:")
             pprint(vars(self.args))
 
-        if self.args.list_languages:
-            self.list_languages()
-            sys.exit(0)
-
         if self.args.info:
             self.dvd_info()
             sys.exit(0)
@@ -430,9 +426,6 @@ class RemuxService:
         elif self.args.action == "chapters":
             for idx in titles_idx:
                 remuxer.dumpchapters(idx, self.outdir)
-
-    def list_languages(self) -> None:
-        subprocess.run(["mkvmerge", "--list-languages"])
 
     def dvd_info(self) -> None:
         self.dvd_info_reader_cls.get_printable_dvd_info(self.args.dvd)

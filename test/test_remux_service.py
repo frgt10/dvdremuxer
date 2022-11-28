@@ -106,7 +106,6 @@ class Args:
         self.dvd = args.get("dvd")
         self.action = "remux_to_mkv"
         self.title_idx = [1]
-        self.list_languages = False
         self.info = False
         self.verbose = False
         self.dry_run = False
