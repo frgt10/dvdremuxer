@@ -152,12 +152,6 @@ def create_argparser():
         help="only print commands that should be executed",
     )
 
-    argparser.add_argument("--title", help="movie title")
-
-    argparser.add_argument("--year", help="movie release year")
-
-    argparser.add_argument("--director", help="movie director")
-
     return argparser
 
 
