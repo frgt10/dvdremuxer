@@ -16,6 +16,7 @@ class Test_dumpvobsub(unittest.TestCase):
             rewrite=False,
             use_sys_tmp_dir=False,
             verbose=False,
+            file_prefix="TEST_DVD",
         )
         self.remuxer._clear_file = MagicMock()
         self.outfile = self.remuxer.tmp_dir / ("TEST_DVD_1_vobsub_1_ru")

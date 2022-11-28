@@ -10,9 +10,9 @@ from datetime import datetime, timedelta
 from pprint import pprint
 import re
 
-from dvd_remuxer.lsdvd import lsdvd
+from .lsdvd import lsdvd
 
-wrong_lang_codes = ["xx", ""]
+wrong_lang_codes = ["", None]
 
 
 class DVDRemuxer:
@@ -23,20 +23,13 @@ class DVDRemuxer:
         self.keep_temp_files = options.get("keep_temp_files")
         self.rewrite = options.get("rewrite")
         self.aspect_ratio = options.get("aspect_ratio")
-        self.audio_params = options.get("audio_params") or []
         self.subs_params = options.get("subs_params") or []
         self.split_chapters = options.get("split_chapters")
         self.verbose = options.get("verbose")
         self.tmp_dir_obj = None
-
-        if options.get("use_sys_tmp_dir"):
-            self.tmp_dir_obj = TemporaryDirectory(prefix="_dvdremux")
-            self.tmp_dir = Path(self.tmp_dir_obj.name)
-        else:
-            self.tmp_dir = Path.cwd()
-
-        if self.verbose:
-            print("Temp directory: %s" % (self.tmp_dir))
+        self.file_prefix = options.get("file_prefix")
+        self.tmp_dir = Path.cwd()
+        self.use_sys_tmp_dir = options.get("use_sys_tmp_dir")
 
         self.temp_files = []
         self.langcodes = ["ru", "en"]
@@ -44,11 +37,9 @@ class DVDRemuxer:
         if not self.lsdvd:
             raise Exception("Path is not valid video DVD")
 
-        self.file_prefix = "dvd"
-        if self.lsdvd.title and self.lsdvd.title != "unknown":
-            self.file_prefix = self.lsdvd.title
-
-    def remux_to_mkv(self, title_idx: int) -> None:
+    def remux_to_mkv(
+        self, title_idx: int, audio_params: list, subs_params: list
+    ) -> None:
         print(
             "remuxing title #%i (%s)"
             % (
@@ -57,16 +48,23 @@ class DVDRemuxer:
             )
         )
 
+        pprint(self.use_sys_tmp_dir)
+
+        if self.use_sys_tmp_dir:
+            self.tmp_dir_obj = TemporaryDirectory(prefix="dvdremux_")
+            self.tmp_dir = Path(self.tmp_dir_obj.name)
+
+        if self.verbose:
+            print("Temp directory: %s" % (self.tmp_dir))
+
         outfile = Path("%s_%i.DVDRemux.mkv" % (self.file_prefix, title_idx))
 
-        mkvmerge_cmd = self.gen_mkvmerge_cmd(title_idx)
+        mkvmerge_cmd = self.gen_mkvmerge_cmd(title_idx, audio_params, subs_params)
 
         file_stream = self.dumpstream(title_idx)
         self.temp_files.append(file_stream)
 
-        for sub_idx, langcode in self._get_title_subs_params(title_idx):
-            langcode = self._normalize_langcode("vobp", title_idx, sub_idx, langcode)
-
+        for sub_idx, langcode in subs_params:
             file_vobsub_idx, file_vobsub_sub = self.dumpvobsub(
                 title_idx, sub_idx, langcode
             )
@@ -89,7 +87,9 @@ class DVDRemuxer:
 
         return outfile
 
-    def gen_mkvmerge_cmd(self, title_idx: int) -> list():
+    def gen_mkvmerge_cmd(
+        self, title_idx: int, audio_params: list, subs_params: list
+    ) -> list():
         outfile = Path("%s_%i.DVDRemux.mkv" % (self.file_prefix, title_idx))
 
         merge_args = ["mkvmerge", "--output", outfile]
@@ -99,38 +99,20 @@ class DVDRemuxer:
         # video from file_stream is first track
         track_order = "%i:0" % (in_file_number)
 
-        # audio params from command line argumets
-        if self.audio_params:
-            audio_tracks = []
+        audio_tracks = []
 
-            for audio_idx, langcode in self.audio_params:
-                langcode = self._normalize_langcode(
-                    "audio", title_idx, audio_idx, langcode
-                )
+        for audio_idx, langcode in audio_params:
+            audio_tracks.append(str(audio_idx))
 
-                audio_tracks.append(str(audio_idx))
+            merge_args.append("--language")
+            merge_args.append("%i:%s" % (audio_idx, langcode))
 
-                merge_args.append("--language")
-                merge_args.append("%i:%s" % (audio_idx, langcode))
+            # audio from file_stream just after video
+            track_order += ",%i:%i" % (in_file_number, audio_idx)
 
-                # audio from file_stream just after video
-                track_order += ",%i:%i" % (in_file_number, audio_idx)
-
-            # set the necessary audio tracks
-            merge_args.append("--audio-tracks")
-            merge_args.append(str.join(",", audio_tracks))
-
-        # or all audio from DVD title
-        else:
-            for audio in self.lsdvd.track[title_idx - 1].audio:
-                langcode = self._normalize_langcode(
-                    "audio", title_idx, audio.ix, audio.langcode
-                )
-                merge_args.append("--language")
-                merge_args.append("%i:%s" % (audio.ix, langcode))
-
-                # audio from file_stream just after video
-                track_order += ",%i:%i" % (in_file_number, audio.ix)
+        # set the necessary audio tracks
+        merge_args.append("--audio-tracks")
+        merge_args.append(str.join(",", audio_tracks))
 
         if self.aspect_ratio:
             merge_args.append("--aspect-ratio")
@@ -139,9 +121,7 @@ class DVDRemuxer:
         file_stream = self.gen_dumpstream_filename(title_idx)
         merge_args.append(file_stream)
 
-        for sub_idx, langcode in self._get_title_subs_params(title_idx):
-            langcode = self._normalize_langcode("vobp", title_idx, sub_idx, langcode)
-
+        for sub_idx, langcode in subs_params:
             file_vobsub, file_vobsub_idx, file_vobsub_sub = self.gen_vobsub_filenames(
                 title_idx, sub_idx, langcode
             )
@@ -339,6 +319,7 @@ class DVDRemuxer:
 
     def _save_to_file(self, outfile: Path, data: str) -> None:
         if self.dry_run:
+            print(outfile.as_posix())
             return
 
         with outfile.open(mode="w") as f:
@@ -382,17 +363,6 @@ class DVDRemuxer:
 
         return subs_params
 
-    def _normalize_langcode(
-        self, type: str, title_idx: int, idx: int, langcode: str
-    ) -> str:
-        if langcode == "undefined":
-            langcode = getattr(self.lsdvd.track[title_idx - 1], type)[idx - 1].langcode
-
-        if langcode in wrong_lang_codes:
-            langcode = "und"
-
-        return langcode
-
 
 def convert_seconds_to_hhmmss(seconds: float) -> str:
     return (datetime.utcfromtimestamp(0) + timedelta(seconds=seconds)).strftime(
@@ -405,6 +375,8 @@ class RemuxService:
         self.args = args
         self.dvd_info_reader_cls = dvd_info_reader_cls
         self.remuxer_cls = remuxer_cls
+        self.lsdvd = self.dvd_info_reader_cls.read(self.args.dvd)
+        self.langcodes = []
 
     def run(self):
         if self.args.verbose:
@@ -422,38 +394,43 @@ class RemuxService:
         if self.args.verbose:
             self.dvd_info()
 
-        lsdvd_obj = self.dvd_info_reader_cls.read(self.args.dvd)
-
-        titles_idx = self._get_titles(self.args, lsdvd_obj)
-
         remuxer = self.remuxer_cls(
             self.args.dvd,
-            lsdvd=lsdvd_obj,
+            lsdvd=self.lsdvd,
             dry_run=self.args.dry_run,
             keep_temp_files=self.args.keep,
             rewrite=self.args.rewrite,
             use_sys_tmp_dir=self.args.use_sys_tmp_dir,
             aspect_ratio=self.args.aspect_ratio,
-            audio_params=self.args.audio_params,
             subs_params=self.args.subs_params,
             split_chapters=self.args.split_chapters,
             verbose=self.args.verbose,
+            file_prefix=self._get_file_prefix(),
         )
 
         if self.args.add_sub_langcode:
             remuxer.langcodes = +self.args.add_sub_langcode
 
+        self.langcodes = remuxer.langcodes
+
         pprint(remuxer.langcodes)
 
-        action = {
-            "remux_to_mkv": "remux_to_mkv",
-            "stream": "dumpstream",
-            "subs": "dumpvobsubs",
-            "chapters": "dumpchapters",
-        }.get(self.args.action)
+        titles_idx = self._get_titles()
 
-        for idx in titles_idx:
-            getattr(remuxer, action)(idx)
+        if self.args.action == "remux_to_mkv":
+            for idx in titles_idx:
+                remuxer.remux_to_mkv(
+                    idx, self.get_audio_params(idx), self.get_subs_params(idx)
+                )
+        elif self.args.action == "stream":
+            for idx in titles_idx:
+                remuxer.dumpstream(idx)
+        elif self.args.action == "subs":
+            for idx in titles_idx:
+                remuxer.dumpvobsubs(idx)
+        elif self.args.action == "chapters":
+            for idx in titles_idx:
+                remuxer.dumpchapters(idx)
 
     def list_languages(self) -> None:
         subprocess.run(["mkvmerge", "--list-languages"])
@@ -461,19 +438,76 @@ class RemuxService:
     def dvd_info(self) -> None:
         self.dvd_info_reader_cls.get_printable_dvd_info(self.args.dvd)
 
-    def _get_titles(self, args, lsdvd_obj):
+    def _get_titles(self):
         titles_idx = []
 
-        if args.title_idx:
-            titles_idx = args.title_idx
-        elif args.all_titles:
+        if self.args.title_idx:
+            titles_idx = self.args.title_idx
+        elif self.args.all_titles:
             print("Remuxing all titles")
-            titles_idx = lsdvd_obj.all_titles_idx()
+            titles_idx = self.lsdvd.all_titles_idx()
         else:
             print(
                 "No titles specified. Use longest title #%i."
-                % (lsdvd_obj.longest_title_idx())
+                % (self.lsdvd.longest_title_idx())
             )
-            titles_idx.append(lsdvd_obj.longest_title_idx())
+            titles_idx.append(self.lsdvd.longest_title_idx())
 
         return titles_idx
+
+    def _get_file_prefix(self):
+        if self.lsdvd.title and self.lsdvd.title != "unknown":
+            return self.lsdvd.title
+
+        return "dvd"
+
+    def get_audio_params(self, title_idx: int) -> list:
+        audio_params = []
+
+        # audio params from command line argumets
+        if self.args.audio_params:
+            audio_params = self.args.audio_params
+
+        # or all audio from DVD title
+        else:
+            for audio in self.lsdvd.track[title_idx - 1].audio:
+                audio_params.append([audio.ix, audio.langcode])
+
+        for i in range(len(audio_params)):
+            audio_idx, langcode = audio_params[i]
+            audio_params[i][1] = self._normalize_langcode(
+                "audio", title_idx, audio_idx, langcode
+            )
+
+        return audio_params
+
+    def get_subs_params(self, title_idx: int) -> list:
+        subs_params = []
+
+        if self.args.subs_params:
+            subs_params = self.args.subs_params
+        else:
+            for vobsub in self.lsdvd.track[title_idx - 1].subp:
+                if vobsub.langcode in self.langcodes:
+                    subs_params.append([vobsub.ix, vobsub.langcode])
+
+        for i in range(len(subs_params)):
+            vobp_idx, langcode = subs_params[i]
+            subs_params[i][1] = self._normalize_langcode(
+                "subp", title_idx, vobp_idx, langcode
+            )
+
+        return subs_params
+
+    def _normalize_langcode(
+        self, type: str, title_idx: int, idx: int, langcode: str
+    ) -> str:
+        if langcode == "undefined":
+            langcode = getattr(self.lsdvd.track[title_idx - 1], type)[idx - 1].langcode
+
+        if langcode == "xx":
+            langcode = "mul"  # Multiple languages
+        elif langcode in wrong_lang_codes:
+            langcode = "und"
+
+        return langcode

@@ -15,11 +15,12 @@ class Test_gen_mkvmerge_cmd(unittest.TestCase):
             rewrite=False,
             use_sys_tmp_dir=False,
             verbose=False,
+            file_prefix="TEST_DVD",
         )
 
     def test_basic_case(self):
         self.assertListEqual(
-            self.remuxer.gen_mkvmerge_cmd(1),
+            self.remuxer.gen_mkvmerge_cmd(1, [[1, "en"], [2, "ru"]], [[1, "ru"]]),
             [
                 "mkvmerge",
                 "--output",
@@ -28,6 +29,8 @@ class Test_gen_mkvmerge_cmd(unittest.TestCase):
                 "1:en",
                 "--language",
                 "2:ru",
+                "--audio-tracks",
+                "1,2",
                 self.remuxer.tmp_dir / ("TEST_DVD_1_video.vob"),
                 "--language",
                 "0:ru",
@@ -42,7 +45,7 @@ class Test_gen_mkvmerge_cmd(unittest.TestCase):
     def test_with_aspect_ratio(self):
         self.remuxer.aspect_ratio = "16/9"
         self.assertListEqual(
-            self.remuxer.gen_mkvmerge_cmd(1),
+            self.remuxer.gen_mkvmerge_cmd(1, [[1, "en"], [2, "ru"]], [[1, "ru"]]),
             [
                 "mkvmerge",
                 "--output",
@@ -51,6 +54,8 @@ class Test_gen_mkvmerge_cmd(unittest.TestCase):
                 "1:en",
                 "--language",
                 "2:ru",
+                "--audio-tracks",
+                "1,2",
                 "--aspect-ratio",
                 "0:16/9",
                 self.remuxer.tmp_dir / ("TEST_DVD_1_video.vob"),
@@ -67,7 +72,7 @@ class Test_gen_mkvmerge_cmd(unittest.TestCase):
     def test_with_split_chapters(self):
         self.remuxer.split_chapters = True
         self.assertListEqual(
-            self.remuxer.gen_mkvmerge_cmd(1),
+            self.remuxer.gen_mkvmerge_cmd(1, [[1, "en"], [2, "ru"]], [[1, "ru"]]),
             [
                 "mkvmerge",
                 "--output",
@@ -76,6 +81,8 @@ class Test_gen_mkvmerge_cmd(unittest.TestCase):
                 "1:en",
                 "--language",
                 "2:ru",
+                "--audio-tracks",
+                "1,2",
                 self.remuxer.tmp_dir / ("TEST_DVD_1_video.vob"),
                 "--language",
                 "0:ru",
@@ -90,9 +97,8 @@ class Test_gen_mkvmerge_cmd(unittest.TestCase):
         )
 
     def test_with_audio(self):
-        self.remuxer.audio_params = [[2, "ru"], [1, "en"]]
         self.assertListEqual(
-            self.remuxer.gen_mkvmerge_cmd(1),
+            self.remuxer.gen_mkvmerge_cmd(1, [[2, "ru"], [1, "en"]], [[1, "ru"]]),
             [
                 "mkvmerge",
                 "--output",
@@ -117,7 +123,7 @@ class Test_gen_mkvmerge_cmd(unittest.TestCase):
     def test_without_chapters(self):
         self.remuxer.lsdvd.track[0].chapter = []
         self.assertListEqual(
-            self.remuxer.gen_mkvmerge_cmd(1),
+            self.remuxer.gen_mkvmerge_cmd(1, [[1, "en"], [2, "ru"]], [[1, "ru"]]),
             [
                 "mkvmerge",
                 "--output",
@@ -126,6 +132,8 @@ class Test_gen_mkvmerge_cmd(unittest.TestCase):
                 "1:en",
                 "--language",
                 "2:ru",
+                "--audio-tracks",
+                "1,2",
                 self.remuxer.tmp_dir / ("TEST_DVD_1_video.vob"),
                 "--language",
                 "0:ru",

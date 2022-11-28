@@ -16,6 +16,7 @@ class Test_dumpchapters(unittest.TestCase):
             rewrite=False,
             use_sys_tmp_dir=False,
             verbose=False,
+            file_prefix="TEST_DVD",
         )
         self.outfile = self.remuxer.tmp_dir / ("TEST_DVD_1_chapters.txt")
         self.remuxer._save_to_file = MagicMock()
