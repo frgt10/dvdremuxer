@@ -19,7 +19,9 @@ class lsdvd:
 
         # using json.loads method and passing json.dumps
         # method and custom object hook as arguments
-        return json.loads(json.dumps(data_dict), object_hook=cls)
+        lsdvd_obj = json.loads(json.dumps(data_dict), object_hook=cls)
+
+        return lsdvd_obj
 
     @staticmethod
     def get_dvd_info(lsdvd_output: str) -> dict:
@@ -32,7 +34,7 @@ class lsdvd:
         except Exception as inst:
             print(inst)
             print(lsdvd_data[:1024])
-            sys.exit(2)
+            raise Exception("Path is not valid video DVD")
 
         return lsdvd_data
 

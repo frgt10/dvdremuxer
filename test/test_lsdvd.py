@@ -88,10 +88,8 @@ class TestLsDVD(unittest.TestCase):
         )
 
     def test_get_dvd_info_raise(self):
-        with self.assertRaises(SystemExit) as cm:
+        with self.assertRaises(Exception) as cm:
             lsdvd_test.get_dvd_info(incorrect_lsdvd_otput)
-
-        self.assertEqual(cm.exception.code, 2)
 
     def test_get_printable_dvd_info(self):
         self.assertEqual(lsdvd_test.get_printable_dvd_info("."), "Disc Title: TEST_DVD")

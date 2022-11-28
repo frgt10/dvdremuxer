@@ -33,9 +33,6 @@ class DVDRemuxer:
         self.temp_files = []
         self.langcodes = ["ru", "en"]
 
-        if not self.lsdvd:
-            raise Exception("Path is not valid video DVD")
-
     def remux_to_mkv(
         self, title_idx: int, audio_params: list, subs_params: list, outdir: Path
     ) -> None:
@@ -366,9 +363,12 @@ class RemuxService:
         self.args = args
         self.dvd_info_reader_cls = dvd_info_reader_cls
         self.remuxer_cls = remuxer_cls
-        self.lsdvd = self.dvd_info_reader_cls.read(self.args.dvd)
         self.langcodes = []
         self.outdir = Path.cwd()
+
+        self.lsdvd = self.dvd_info_reader_cls.read(self.args.dvd)
+        if not self.lsdvd:
+            raise Exception("Path is not valid video DVD")
 
     def run(self):
         if self.args.verbose:

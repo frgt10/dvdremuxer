@@ -1,13 +1,17 @@
 import unittest
-from unittest.mock import MagicMock
-import json
 
 from dvd_remuxer.dvdremux import RemuxService
+from dvd_remuxer.lsdvd import lsdvd
 from .dvdremux_test import DVDRemuxerTest
 from .lsdvd import lsdvd_test
 
 
 class TestRemuxService(unittest.TestCase):
+    def test_init_without_lsdvd(self):
+        args = Args(dvd=".")
+        with self.assertRaises(Exception) as cm:
+            RemuxService(lsdvd, DVDRemuxerTest, args)
+
     def test_run(self):
         args = Args(dvd=".")
         RemuxService(lsdvd_test, DVDRemuxerTest, args).run()
