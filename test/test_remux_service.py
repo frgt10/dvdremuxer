@@ -1,6 +1,6 @@
 import unittest
 
-from dvd_remuxer.dvdremux import RemuxService
+from dvd_remuxer.remux_service import RemuxService
 from dvd_remuxer.lsdvd import lsdvd
 from .dvdremux_test import DVDRemuxerTest
 from .lsdvd import lsdvd_test

@@ -1,8 +1,9 @@
 import sys
 
 from .options import parse_args
-from .dvdremux import DVDRemuxer, RemuxService
+from .dvdremux import DVDRemuxer
 from .lsdvd import lsdvd
+from .remux_service import RemuxService
 
 
 def main():
