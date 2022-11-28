@@ -56,7 +56,7 @@ def create_argparser():
     argparser.add_argument(
         "dvd",
         metavar="PATH",
-        help="dir with VIDEO_TS or iso image",
+        help="directory with VIDEO_TS or ISO image",
         type=lambda path: is_valid_path(argparser, path),
     )
 
@@ -65,7 +65,7 @@ def create_argparser():
         dest="title_idx",
         nargs="?",
         type=lambda title_idx: get_int_list(argparser, title_idx),
-        help="title(s) that should be remuxed",
+        help="title(s) that should be remuxed. E.g.: '1', '1,2,3', '1-5', '1-3,5,7,10-12'",
     )
 
     argparser.add_argument(
@@ -80,36 +80,13 @@ def create_argparser():
     )
 
     argparser.add_argument(
-        "--use-sys-tmp-dir",
-        dest="use_sys_tmp_dir",
-        action="store_true",
-        help="use system temp directory to store temp files",
-    )
-
-    argparser.add_argument(
-        "--add-sub-langcode",
-        dest="add_sub_langcode",
-        metavar="LANGCODE",
-        nargs="?",
-        type=lambda langcodes: get_str_list(argparser, langcodes),
-        help="keep additional subtitles for language",
-    )
-
-    argparser.add_argument(
-        "--aspect-ratio",
-        dest="aspect_ratio",
-        nargs="?",
-        help="Video aspect ratio: 16/9, 4/3",
-    )
-
-    argparser.add_argument(
         "--audio",
         dest="audio_params",
         metavar="AUDIO_ID[:LANGCODE][,AUDIO_ID[:LANGCODE]...]",
         nargs="?",
         type=lambda audio_str: get_complex_params(argparser, audio_str),
-        help="Audio id with langcode (optional) in necessary order (e.g. 2:ru,1,3:en)."
-        + " All languages including their ISO 639-2 codes can be listed with the --list-languages option.",
+        help="audio id with langcode (optional) in necessary order (e.g. 2:ru,1,3:en)."
+        + " All languages including their ISO 639-2 codes can be listed with the --list-languages option",
     )
 
     argparser.add_argument(
@@ -118,8 +95,24 @@ def create_argparser():
         metavar="SUB_ID[:LANGCODE][,SUB_ID[:LANGCODE]...]",
         nargs="?",
         type=lambda audio_str: get_complex_params(argparser, audio_str),
-        help="Subtitle id with langcode (optional) in necessary order (e.g. 2:ru,1,3:en)."
-        + " All languages including their ISO 639-2 codes can be listed with the --list-languages option.",
+        help="subtitle id with langcode (optional) in necessary order (e.g. 2:ru,1,3:en)."
+        + " All languages including their ISO 639-2 codes can be listed with the --list-languages option",
+    )
+
+    argparser.add_argument(
+        "--add-sub-langcode",
+        dest="add_sub_langcode",
+        metavar="LANGCODE",
+        nargs="?",
+        type=lambda langcodes: get_str_list(argparser, langcodes),
+        help="keep additional subtitles for language. Default 'ru', 'en'",
+    )
+
+    argparser.add_argument(
+        "--aspect-ratio",
+        dest="aspect_ratio",
+        nargs="?",
+        help="video aspect ratio: 16/9, 4/3",
     )
 
     argparser.add_argument(
@@ -132,12 +125,23 @@ def create_argparser():
         "--split-chapters",
         dest="split_chapters",
         action="store_true",
-        help="Split video by chapters",
+        help="split video by chapters",
     )
 
     argparser.add_argument("--info", action="store_true", help="show DVD info")
 
-    argparser.add_argument("--keep", action="store_true", help="keep temp files")
+    argparser.add_argument(
+        "--use-sys-tmp-dir",
+        dest="use_sys_tmp_dir",
+        action="store_true",
+        help="use system temp directory to store temp files",
+    )
+
+    argparser.add_argument(
+        "--keep",
+        action="store_true",
+        help="keep temp files. Not work with --use-sys-tmp-dir",
+    )
 
     argparser.add_argument("--rewrite", action="store_true", help="rewrite files")
 
