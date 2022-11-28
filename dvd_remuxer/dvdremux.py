@@ -357,18 +357,6 @@ class DVDRemuxer:
                 except:
                     print("Oops!")
 
-    def _get_title_subs_params(self, title_idx: int) -> list:
-        subs_params = []
-
-        if self.subs_params:
-            subs_params = self.subs_params
-        else:
-            for vobsub in self.lsdvd.track[title_idx - 1].subp:
-                if vobsub.langcode in self.langcodes:
-                    subs_params.append([vobsub.ix, vobsub.langcode])
-
-        return subs_params
-
 
 def convert_seconds_to_hhmmss(seconds: float) -> str:
     return (datetime.utcfromtimestamp(0) + timedelta(seconds=seconds)).strftime(
