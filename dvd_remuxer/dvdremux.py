@@ -38,7 +38,7 @@ class DVDRemuxer:
             raise Exception("Path is not valid video DVD")
 
     def remux_to_mkv(
-        self, title_idx: int, audio_params: list, subs_params: list
+        self, title_idx: int, audio_params: list, subs_params: list, outdir: Path
     ) -> None:
         print(
             "remuxing title #%i (%s)"
@@ -57,22 +57,24 @@ class DVDRemuxer:
         if self.verbose:
             print("Temp directory: %s" % (self.tmp_dir))
 
-        outfile = Path("%s_%i.DVDRemux.mkv" % (self.file_prefix, title_idx))
+        outfile = outdir / Path("%s_%i.DVDRemux.mkv" % (self.file_prefix, title_idx))
 
-        mkvmerge_cmd = self.gen_mkvmerge_cmd(title_idx, audio_params, subs_params)
+        mkvmerge_cmd = self.gen_mkvmerge_cmd(
+            title_idx, audio_params, subs_params, outdir
+        )
 
-        file_stream = self.dumpstream(title_idx)
+        file_stream = self.dumpstream(title_idx, self.tmp_dir)
         self.temp_files.append(file_stream)
 
         for sub_idx, langcode in subs_params:
             file_vobsub_idx, file_vobsub_sub = self.dumpvobsub(
-                title_idx, sub_idx, langcode
+                title_idx, sub_idx, langcode, self.tmp_dir
             )
 
             self.temp_files.append(file_vobsub_idx)
             self.temp_files.append(file_vobsub_sub)
 
-        file_chapters = self.dumpchapters(title_idx)
+        file_chapters = self.dumpchapters(title_idx, self.tmp_dir)
         self.temp_files.append(file_chapters)
 
         print("merge tracks")
@@ -88,9 +90,9 @@ class DVDRemuxer:
         return outfile
 
     def gen_mkvmerge_cmd(
-        self, title_idx: int, audio_params: list, subs_params: list
+        self, title_idx: int, audio_params: list, subs_params: list, outdir: Path
     ) -> list():
-        outfile = Path("%s_%i.DVDRemux.mkv" % (self.file_prefix, title_idx))
+        outfile = outdir / Path("%s_%i.DVDRemux.mkv" % (self.file_prefix, title_idx))
 
         merge_args = ["mkvmerge", "--output", outfile]
 
@@ -118,12 +120,12 @@ class DVDRemuxer:
             merge_args.append("--aspect-ratio")
             merge_args.append("0:%s" % (self.aspect_ratio))
 
-        file_stream = self.gen_dumpstream_filename(title_idx)
+        file_stream = self.gen_dumpstream_filename(title_idx, self.tmp_dir)
         merge_args.append(file_stream)
 
         for sub_idx, langcode in subs_params:
             file_vobsub, file_vobsub_idx, file_vobsub_sub = self.gen_vobsub_filenames(
-                title_idx, sub_idx, langcode
+                title_idx, sub_idx, langcode, self.tmp_dir
             )
 
             in_file_number += 1  # each subtitle track in separate file
@@ -136,7 +138,7 @@ class DVDRemuxer:
             track_order += ",%i:0" % (in_file_number)
 
         if len(self.lsdvd.track[title_idx - 1].chapter) > 1:
-            file_chapters = self.gen_chapters_filename(title_idx)
+            file_chapters = self.gen_chapters_filename(title_idx, self.tmp_dir)
             merge_args.append("--chapters")
             merge_args.append(file_chapters)
 
@@ -149,16 +151,16 @@ class DVDRemuxer:
 
         return merge_args
 
-    def dumpstream(self, title_idx: int) -> Path:
-        outfile, dump_args = self.build_dumpstream_cmd(title_idx)
+    def dumpstream(self, title_idx: int, outdir: Path) -> Path:
+        outfile, dump_args = self.build_dumpstream_cmd(title_idx, outdir)
 
         print("dump stream")
         self._perform_dumpstream(outfile, dump_args)
 
         return outfile
 
-    def build_dumpstream_cmd(self, title_idx: int) -> list:
-        outfile = self.gen_dumpstream_filename(title_idx)
+    def build_dumpstream_cmd(self, title_idx: int, outdir: Path) -> list:
+        outfile = self.gen_dumpstream_filename(title_idx, outdir)
 
         dump_args = [
             "mplayer",
@@ -172,8 +174,8 @@ class DVDRemuxer:
 
         return outfile, dump_args
 
-    def gen_dumpstream_filename(self, title_idx: int) -> list:
-        return self.tmp_dir / ("%s_%i_video.vob" % (self.file_prefix, title_idx))
+    def gen_dumpstream_filename(self, title_idx: int, outdir: Path) -> list:
+        return outdir / ("%s_%i_video.vob" % (self.file_prefix, title_idx))
 
     def _perform_dumpstream(self, outfile: Path, dump_args: list) -> None:
         if not outfile.exists() or self.rewrite:
@@ -181,10 +183,10 @@ class DVDRemuxer:
                 dump_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
             )
 
-    def dumpchapters(self, title_idx: int) -> Path:
+    def dumpchapters(self, title_idx: int, outdir: Path) -> Path:
         print("dump chapters")
 
-        outfile = self.gen_chapters_filename(title_idx)
+        outfile = self.gen_chapters_filename(title_idx, outdir)
 
         chapters = self.gen_chapters(title_idx)
 
@@ -195,8 +197,8 @@ class DVDRemuxer:
 
         return outfile
 
-    def gen_chapters_filename(self, title_idx: int) -> str:
-        return self.tmp_dir / ("%s_%i_chapters.txt" % (self.file_prefix, title_idx))
+    def gen_chapters_filename(self, title_idx: int, outdir: Path) -> str:
+        return outdir / ("%s_%i_chapters.txt" % (self.file_prefix, title_idx))
 
     def gen_chapters(self, title_idx: int) -> str:
         start = 0.000
@@ -217,21 +219,23 @@ class DVDRemuxer:
         if not outfile.exists() or self.rewrite:
             self._save_to_file(outfile, chapters)
 
-    def dumpvobsubs(self, title_idx: int) -> dict:
+    def dumpvobsubs(self, title_idx: int, outdir: Path) -> dict:
         output_files = {}
         for vobsub in self.lsdvd.track[title_idx - 1].subp:
             if vobsub.langcode in self.langcodes:
                 output_files[vobsub.langcode] = self.dumpvobsub(
-                    title_idx, vobsub.ix, vobsub.langcode
+                    title_idx, vobsub.ix, vobsub.langcode, outdir
                 )
 
         return output_files
 
-    def dumpvobsub(self, title_idx: int, sub_ix: int, langcode: str):
+    def dumpvobsub(
+        self, title_idx: int, sub_ix: int, langcode: str, outdir: Path
+    ) -> tuple(Path, Path):
         print("extracting subtitle %i lang %s" % (sub_ix, langcode))
 
         outfile, outfile_idx, outfile_sub = self.gen_vobsub_filenames(
-            title_idx, sub_ix, langcode
+            title_idx, sub_ix, langcode, outdir
         )
 
         dump_args = self.gen_dumpvobsub_cmd(outfile, title_idx, sub_ix)
@@ -240,8 +244,10 @@ class DVDRemuxer:
 
         return outfile_idx, outfile_sub
 
-    def gen_vobsub_filenames(self, title_idx: int, sub_ix: int, langcode: str) -> tuple:
-        outfile = self.tmp_dir / (
+    def gen_vobsub_filenames(
+        self, title_idx: int, sub_ix: int, langcode: str, outdir: Path
+    ) -> tuple:
+        outfile = outdir / (
             "%s_%i_vobsub_%i_%s" % (self.file_prefix, title_idx, sub_ix, langcode)
         )
 
@@ -377,6 +383,7 @@ class RemuxService:
         self.remuxer_cls = remuxer_cls
         self.lsdvd = self.dvd_info_reader_cls.read(self.args.dvd)
         self.langcodes = []
+        self.outdir = Path.cwd()
 
     def run(self):
         if self.args.verbose:
@@ -420,17 +427,20 @@ class RemuxService:
         if self.args.action == "remux_to_mkv":
             for idx in titles_idx:
                 remuxer.remux_to_mkv(
-                    idx, self.get_audio_params(idx), self.get_subs_params(idx)
+                    idx,
+                    self.get_audio_params(idx),
+                    self.get_subs_params(idx),
+                    self.outdir,
                 )
         elif self.args.action == "stream":
             for idx in titles_idx:
-                remuxer.dumpstream(idx)
+                remuxer.dumpstream(idx, self.outdir)
         elif self.args.action == "subs":
             for idx in titles_idx:
-                remuxer.dumpvobsubs(idx)
+                remuxer.dumpvobsubs(idx, self.outdir)
         elif self.args.action == "chapters":
             for idx in titles_idx:
-                remuxer.dumpchapters(idx)
+                remuxer.dumpchapters(idx, self.outdir)
 
     def list_languages(self) -> None:
         subprocess.run(["mkvmerge", "--list-languages"])

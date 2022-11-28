@@ -18,14 +18,17 @@ class Test_dumpchapters(unittest.TestCase):
             verbose=False,
             file_prefix="TEST_DVD",
         )
-        self.outfile = self.remuxer.tmp_dir / ("TEST_DVD_1_chapters.txt")
+        self.outdir = Path.cwd()
+        self.outfile = self.outdir / ("TEST_DVD_1_chapters.txt")
         self.remuxer._save_to_file = MagicMock()
 
     def test_dumpchapters(self):
-        self.assertEqual(self.remuxer.dumpchapters(1), self.outfile)
+        self.assertEqual(self.remuxer.dumpchapters(1, self.outdir), self.outfile)
 
     def test_gen_chapters_filename(self):
-        self.assertEqual(self.remuxer.gen_chapters_filename(1), self.outfile)
+        self.assertEqual(
+            self.remuxer.gen_chapters_filename(1, self.outdir), self.outfile
+        )
 
     def test_gen_chapters(self):
         chapters_expected = (

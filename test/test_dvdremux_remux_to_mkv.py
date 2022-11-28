@@ -13,10 +13,11 @@ class TestDVDRemuxRemuxToMKV(unittest.TestCase):
             lsdvd=lsdvd_test.read("."),
             file_prefix="TEST_DVD",
         )
+        self.outdir = Path.cwd()
 
     def test_remux_to_mkv(self):
         self.assertEqual(
-            self.remuxer.remux_to_mkv(1, [[1, "ru"]], [[1, "ru"]]).name,
+            self.remuxer.remux_to_mkv(1, [[1, "ru"]], [[1, "ru"]], self.outdir).name,
             "TEST_DVD_1.DVDRemux.mkv",
         )
 
@@ -24,7 +25,7 @@ class TestDVDRemuxRemuxToMKV(unittest.TestCase):
         self.remuxer.keep_temp_files = 1
 
         self.assertEqual(
-            self.remuxer.remux_to_mkv(1, [[1, "ru"]], [[1, "ru"]]).name,
+            self.remuxer.remux_to_mkv(1, [[1, "ru"]], [[1, "ru"]], self.outdir).name,
             "TEST_DVD_1.DVDRemux.mkv",
         )
 
@@ -36,7 +37,7 @@ class TestDVDRemuxRemuxToMKV(unittest.TestCase):
             file_prefix="TEST_DVD",
         )
 
-        remuxer.remux_to_mkv(1, [[1, "ru"]], [[1, "ru"]])
+        remuxer.remux_to_mkv(1, [[1, "ru"]], [[1, "ru"]], self.outdir)
 
         self.assertIsInstance(remuxer.tmp_dir_obj, TemporaryDirectory)
 

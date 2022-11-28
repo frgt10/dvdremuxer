@@ -19,11 +19,12 @@ class Test_dumpvobsub(unittest.TestCase):
             file_prefix="TEST_DVD",
         )
         self.remuxer._clear_file = MagicMock()
-        self.outfile = self.remuxer.tmp_dir / ("TEST_DVD_1_vobsub_1_ru")
+        self.outdir = Path.cwd()
+        self.outfile = self.outdir / ("TEST_DVD_1_vobsub_1_ru")
 
     def test_dumpvobsub(self):
         self.assertTupleEqual(
-            self.remuxer.dumpvobsub(1, 1, "ru"),
+            self.remuxer.dumpvobsub(1, 1, "ru", self.outdir),
             (
                 self.outfile.with_suffix(".idx"),
                 self.outfile.with_suffix(".sub"),
@@ -32,7 +33,7 @@ class Test_dumpvobsub(unittest.TestCase):
 
     def test_gen_vobsub_filenames(self):
         self.assertTupleEqual(
-            self.remuxer.gen_vobsub_filenames(1, 1, "ru"),
+            self.remuxer.gen_vobsub_filenames(1, 1, "ru", self.outdir),
             (
                 self.outfile,
                 self.outfile.with_suffix(".idx"),
@@ -130,7 +131,7 @@ timestamp: 00:13:18:239, filepos: 000000000
 
     def test_dumpvobsubs(self):
         self.assertDictEqual(
-            self.remuxer.dumpvobsubs(1),
+            self.remuxer.dumpvobsubs(1, self.outdir),
             {
                 "ru": (
                     self.outfile.with_suffix(".idx"),
