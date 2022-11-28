@@ -47,8 +47,6 @@ class DVDRemuxer:
             )
         )
 
-        pprint(self.use_sys_tmp_dir)
-
         if self.use_sys_tmp_dir:
             self.tmp_dir_obj = TemporaryDirectory(prefix="dvdremux_")
             self.tmp_dir = Path(self.tmp_dir_obj.name)
