@@ -24,7 +24,7 @@ class RemuxService:
         if not self.lsdvd:
             raise Exception("Path is not valid video DVD")
 
-    def run(self):
+    def run(self) -> None:
         if self.args.verbose:
             print("Run with arguments:")
             pprint(vars(self.args))
@@ -80,7 +80,7 @@ class RemuxService:
     def dvd_info(self) -> None:
         self.dvd_info_reader_cls.get_printable_dvd_info(self.args.dvd)
 
-    def _get_titles(self):
+    def _get_titles(self) -> list:
         titles_idx = []
 
         if self.args.title_idx:
@@ -97,7 +97,7 @@ class RemuxService:
 
         return titles_idx
 
-    def _get_file_prefix(self):
+    def _get_file_prefix(self) -> str:
         if self.lsdvd.title and self.lsdvd.title != "unknown":
             return self.lsdvd.title
 
