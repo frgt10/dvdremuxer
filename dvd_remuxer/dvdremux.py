@@ -285,6 +285,10 @@ class DVDRemuxer:
                 self._clear_file(outfile_idx)
                 self._clear_file(outfile_sub)
             else:
+                print("VobSub files exist:")
+                print(outfile_idx.as_posix())
+                print(outfile_sub.as_posix())
+                print("Use the --rewrite option to rewrite.")
                 return
 
         self._subprocess_run(
