@@ -12,10 +12,6 @@ class TestRemuxService(unittest.TestCase):
         with self.assertRaises(Exception) as cm:
             RemuxService(lsdvd, DVDRemuxerTest, args)
 
-    def test_run(self):
-        args = Args(dvd=".")
-        RemuxService(lsdvd_test, DVDRemuxerTest, args).run()
-
     def test_get_file_prefix_lsdvd_title_empty(self):
         args = Args(dvd=".")
         remux_service = RemuxService(lsdvd_test, DVDRemuxerTest, args)
@@ -59,15 +55,16 @@ class TestRemuxService(unittest.TestCase):
         remux_service = RemuxService(lsdvd_test, DVDRemuxerTest, args)
         self.assertLessEqual(
             remux_service.get_subs_params(1),
-            [[1, "en"], [2, "ru"]],
+            [[1, "ru"], [2, "fr"]],
         )
 
     def test_get_subs_params2(self):
         args = Args(dvd=".")
         remux_service = RemuxService(lsdvd_test, DVDRemuxerTest, args)
+        remux_service.run()
         self.assertLessEqual(
             remux_service.get_subs_params(1),
-            [[1, "en"], [2, "ru"]],
+            [[1, "ru"]],
         )
 
     def test_get_subs_params3(self):
@@ -100,21 +97,62 @@ class TestRemuxService(unittest.TestCase):
             remux_service._normalize_langcode("audio", 1, 2, "undefined"), "ru"
         )
 
+    def test_get_titles(self):
+        args = Args(dvd=".", title_idx=[1, 2])
+        remux_service = RemuxService(lsdvd_test, DVDRemuxerTest, args)
+        remux_service.run()
+        self.assertListEqual(remux_service._get_titles(), [1, 2])
+
+    def test_get_titles_all(self):
+        args = Args(dvd=".", all_titles=True)
+        remux_service = RemuxService(lsdvd_test, DVDRemuxerTest, args)
+        remux_service.run()
+        self.assertListEqual(remux_service._get_titles(), [1, 2, 3])
+
+    def test_run_dvd_info(self):
+        args = Args(dvd=".", info=True)
+
+        with self.assertRaises(SystemExit) as cm:
+            RemuxService(lsdvd_test, DVDRemuxerTest, args).run()
+
+        self.assertEqual(cm.exception.code, 0)
+
+    def test_run_verbose(self):
+        args = Args(dvd=".", verbose=True)
+        RemuxService(lsdvd_test, DVDRemuxerTest, args).run()
+        pass
+
+    def test_run_stream(self):
+        args = Args(dvd=".", action="stream")
+        RemuxService(lsdvd_test, DVDRemuxerTest, args).run()
+        pass
+
+    def test_run_subs(self):
+        args = Args(dvd=".", action="subs")
+        RemuxService(lsdvd_test, DVDRemuxerTest, args).run()
+        pass
+
+    def test_run_chapters(self):
+        args = Args(dvd=".", action="chapters")
+        RemuxService(lsdvd_test, DVDRemuxerTest, args).run()
+        pass
+
 
 class Args:
     def __init__(self, **args) -> None:
         self.dvd = args.get("dvd")
-        self.action = "remux_to_mkv"
-        self.title_idx = [1]
-        self.info = False
-        self.verbose = False
+        self.action = args.get("action") or "remux_to_mkv"
+        self.title_idx = args.get("title_idx")
+        self.all_titles = args.get("all_titles")
+        self.info = args.get("info")
+        self.verbose = args.get("verbose")
         self.dry_run = False
         self.keep = False
         self.rewrite = False
         self.use_sys_tmp_dir = False
         self.aspect_ratio = None
         self.audio_params = args.get("audio_params")
-        self.subs_params = None
+        self.subs_params = args.get("subs_params")
         self.split_chapters = False
         self.add_sub_langcode = None
 
