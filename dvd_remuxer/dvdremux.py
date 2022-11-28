@@ -23,7 +23,6 @@ class DVDRemuxer:
         self.keep_temp_files = options.get("keep_temp_files")
         self.rewrite = options.get("rewrite")
         self.aspect_ratio = options.get("aspect_ratio")
-        self.subs_params = options.get("subs_params") or []
         self.split_chapters = options.get("split_chapters")
         self.verbose = options.get("verbose")
         self.tmp_dir_obj = None
