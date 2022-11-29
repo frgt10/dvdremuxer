@@ -19,13 +19,18 @@ class DVDRemuxer:
         self.dry_run = options.get("dry_run")
         self.keep_temp_files = options.get("keep_temp_files")
         self.rewrite = options.get("rewrite")
+        self.use_sys_tmp_dir = options.get("use_sys_tmp_dir")
         self.aspect_ratio = options.get("aspect_ratio")
         self.split_chapters = options.get("split_chapters")
         self.verbose = options.get("verbose")
-        self.tmp_dir_obj = None
         self.file_prefix = options.get("file_prefix")
-        self.tmp_dir = Path.cwd()
-        self.use_sys_tmp_dir = options.get("use_sys_tmp_dir")
+
+        if self.use_sys_tmp_dir:
+            self.tmp_dir_obj = TemporaryDirectory(prefix="dvdremux_")
+            self.tmp_dir = Path(self.tmp_dir_obj.name)
+        else:
+            self.tmp_dir_obj = None
+            self.tmp_dir = Path.cwd()
 
         self.temp_files = []
         self.langcodes = ["ru", "en"]
@@ -40,10 +45,6 @@ class DVDRemuxer:
                 convert_seconds_to_hhmmss(self.lsdvd.track[title_idx - 1].length),
             )
         )
-
-        if self.use_sys_tmp_dir:
-            self.tmp_dir_obj = TemporaryDirectory(prefix="dvdremux_")
-            self.tmp_dir = Path(self.tmp_dir_obj.name)
 
         if self.verbose:
             print("Temp directory: %s" % (self.tmp_dir))

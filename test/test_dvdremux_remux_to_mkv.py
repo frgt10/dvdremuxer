@@ -37,8 +37,6 @@ class TestDVDRemuxRemuxToMKV(unittest.TestCase):
             file_prefix="TEST_DVD",
         )
 
-        remuxer.remux_to_mkv(1, [[1, "ru"]], [[1, "ru"]], self.outdir)
-
         self.assertIsInstance(remuxer.tmp_dir_obj, TemporaryDirectory)
 
 
