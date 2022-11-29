@@ -44,7 +44,6 @@ class RemuxService:
             rewrite=self.args.rewrite,
             use_sys_tmp_dir=self.args.use_sys_tmp_dir,
             aspect_ratio=self.args.aspect_ratio,
-            subs_params=self.args.subs_params,
             split_chapters=self.args.split_chapters,
             verbose=self.args.verbose,
             file_prefix=self._get_file_prefix(),
