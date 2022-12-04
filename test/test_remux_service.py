@@ -150,16 +150,16 @@ class Args:
         self.action = args.get("action") or "remux_to_mkv"
         self.title_idx = args.get("title_idx")
         self.all_titles = args.get("all_titles")
-        self.info = args.get("info")
-        self.verbose = args.get("verbose")
-        self.dry_run = False
-        self.keep = False
-        self.rewrite = False
-        self.use_sys_tmp_dir = False
-        self.aspect_ratio = None
+        self.info = args.get("info") or False
+        self.verbose = args.get("verbose") or False
+        self.dry_run = args.get("dry_run") or False
+        self.keep = args.get("keep") or False
+        self.rewrite = args.get("rewrite") or False
+        self.use_sys_tmp_dir = args.get("use_sys_tmp_dir") or False
+        self.aspect_ratio = args.get("aspect_ratio")
         self.audio_params = args.get("audio_params")
         self.subs_params = args.get("subs_params")
-        self.split_chapters = False
+        self.split_chapters = args.get("split_chapters") or False
         self.add_sub_langcode = args.get("add_sub_langcode")
 
 
