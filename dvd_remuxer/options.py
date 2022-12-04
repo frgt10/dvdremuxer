@@ -122,7 +122,11 @@ def create_argparser():
         help="split video by chapters",
     )
 
-    argparser.add_argument("--info", action="store_true", help="show DVD info")
+    argparser.add_argument(
+        "--info",
+        action="store_true",
+        help="show DVD info",
+    )
 
     argparser.add_argument(
         "--use-sys-tmp-dir",
@@ -137,10 +141,16 @@ def create_argparser():
         help="keep temp files. Not work with --use-sys-tmp-dir",
     )
 
-    argparser.add_argument("--rewrite", action="store_true", help="rewrite files")
+    argparser.add_argument(
+        "--rewrite",
+        action="store_true",
+        help="rewrite files",
+    )
 
     argparser.add_argument(
-        "--verbose", action="store_true", help="print various debugging information"
+        "--verbose",
+        action="store_true",
+        help="print various debugging information",
     )
 
     argparser.add_argument(
