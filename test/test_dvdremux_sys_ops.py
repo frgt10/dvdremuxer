@@ -3,7 +3,7 @@ from unittest.mock import patch
 from pathlib import Path
 
 from dvd_remuxer.dvdremux import DVDRemuxer
-from .lsdvd import lsdvd_test
+from .lsdvd_test import lsdvd_test
 
 
 class TestDVDRemuxSysOps(unittest.TestCase):

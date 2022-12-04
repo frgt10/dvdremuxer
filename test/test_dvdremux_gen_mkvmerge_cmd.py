@@ -2,7 +2,7 @@ import unittest
 
 from pathlib import Path
 from .dvdremux_test import DVDRemuxerTest
-from .lsdvd import lsdvd_test
+from .lsdvd_test import lsdvd_test
 
 
 class Test_gen_mkvmerge_cmd(unittest.TestCase):

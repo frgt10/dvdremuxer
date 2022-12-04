@@ -1,7 +1,7 @@
 import unittest
 
 from dvd_remuxer.lsdvd import lsdvd
-from .lsdvd import lsdvd_test, lsdvd_otput, incorrect_lsdvd_otput
+from .lsdvd_test import lsdvd_test, lsdvd_otput, incorrect_lsdvd_otput
 
 
 class TestLsDVD(unittest.TestCase):
