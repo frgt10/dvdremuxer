@@ -117,6 +117,12 @@ class TestRemuxService(unittest.TestCase):
 
         self.assertEqual(cm.exception.code, 0)
 
+    def test_add_sub_langcode(self):
+        args = Args(dvd=".", add_sub_langcode=["jp", "fr"])
+        remux_service = RemuxService(lsdvd_test, DVDRemuxerTest, args)
+        remux_service.run()
+        self.assertListEqual(remux_service.langcodes, ["ru", "en", "jp", "fr"])
+
     def test_run_verbose(self):
         args = Args(dvd=".", verbose=True)
         RemuxService(lsdvd_test, DVDRemuxerTest, args).run()
@@ -154,7 +160,7 @@ class Args:
         self.audio_params = args.get("audio_params")
         self.subs_params = args.get("subs_params")
         self.split_chapters = False
-        self.add_sub_langcode = None
+        self.add_sub_langcode = args.get("add_sub_langcode")
 
 
 if __name__ == "__main__":

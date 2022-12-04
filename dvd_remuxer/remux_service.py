@@ -50,7 +50,7 @@ class RemuxService:
         )
 
         if self.args.add_sub_langcode:
-            remuxer.langcodes = +self.args.add_sub_langcode
+            remuxer.langcodes += self.args.add_sub_langcode
 
         self.langcodes = remuxer.langcodes
 
